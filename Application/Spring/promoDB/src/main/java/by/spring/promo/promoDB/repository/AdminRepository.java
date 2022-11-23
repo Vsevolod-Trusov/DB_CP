@@ -1,5 +1,6 @@
 package by.spring.promo.promoDB.repository;
 
+import by.spring.promo.promoDB.rowmapper.OrderRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -30,6 +31,18 @@ public class AdminRepository {
                 .withFunctionName("get_all_persons_by_role");
 
         List res = simpleJdbcCall.executeFunction(List.class , role);
+        return res;
+    }
+
+    @Transactional
+    public List findUnprocessedOrders() {
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .withFunctionName("GET_UNPROCESSED_ORDERS")
+                .returningResultSet("orders", new OrderRowMapper());
+
+        List res = simpleJdbcCall.executeFunction(List.class);
         return res;
     }
 }

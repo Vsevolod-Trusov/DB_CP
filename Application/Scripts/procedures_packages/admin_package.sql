@@ -1,4 +1,7 @@
-select * from user_objects where OBJECT_NAME like '%ADMIN_PACKAGE%' and object_type ='PACKAGE';
+select *
+from user_objects
+where OBJECT_NAME like '%ADMIN_PACKAGE%'
+  and object_type = 'PACKAGE';
 
 drop package admin_package;
 
@@ -7,16 +10,16 @@ create or replace package admin_package is
     function get_all_persons_by_role(role nvarchar2) return sys_refcursor;
     --register user
     procedure register_user(get_login nvarchar2,
-        get_userpoint_name points.point_name%type,
-        password nvarchar2,
-        get_role nvarchar2,
-        get_email nvarchar2,
-        get_street nvarchar2 default '',
-        get_house nvarchar2 default '');
+                            get_userpoint_name points.point_name%type,
+                            password nvarchar2,
+                            get_role nvarchar2,
+                            get_email nvarchar2,
+                            get_street nvarchar2 default '',
+                            get_house nvarchar2 default '');
 
     --authorisation accaunt
     function authorisation(get_login nvarchar2,
-        get_password nvarchar2) return boolean;
+                           get_password nvarchar2) return boolean;
 
     --add good
     procedure add_good(good_name goods.name%type,
@@ -26,50 +29,53 @@ create or replace package admin_package is
     --add goodstoorders
     procedure add_goods_to_order(order_id orders.id%type, good_id goods.id%type);
 
+    --get unprocessed orders
+    function get_unprocessed_orders return sys_refcursor;
     --change order executor and delivery location
     --change order executor and deliverypoint
-         procedure change_executor_and_delivery_point(order_id orders.id%type,
-                                    executor_id orders.excecutorprofileid%type, deliverypoint_id orders.deliverylocationid%type);
-     ------------support functions-----------------
-    function encrypt_password(password  varchar2) return userlogin.password%type;
+    procedure change_executor_and_delivery_point(order_id orders.id%type,
+                                                 executor_id orders.excecutorprofileid%type,
+                                                 deliverypoint_id orders.deliverylocationid%type);
+    ------------support functions-----------------
+    function encrypt_password(password varchar2) return userlogin.password%type;
     function dencrypt_password(password_hash varchar2) return varchar2;
 end admin_package;
 
 
 create or replace package body admin_package is
 
-     --get all notes by role
-      function get_all_persons_by_role(role nvarchar2)
-          return sys_refcursor
-    is
-          table_info sys_refcursor;
+    --get all notes by role
+    function get_all_persons_by_role(role nvarchar2)
+        return sys_refcursor
+        is
+        table_info sys_refcursor;
     begin
         open table_info
             for select login from userlogin where UserLogin.ROLE = role;
         return table_info;
-        end get_all_persons_by_role;
+    end get_all_persons_by_role;
 
     --register user
-     procedure register_user(get_login nvarchar2,
-        get_userpoint_name points.point_name%type,
-        password nvarchar2,
-        get_role nvarchar2,
-        get_email nvarchar2,
-        get_street nvarchar2 default '',
-        get_house nvarchar2 default '')
-    is
+    procedure register_user(get_login nvarchar2,
+                            get_userpoint_name points.point_name%type,
+                            password nvarchar2,
+                            get_role nvarchar2,
+                            get_email nvarchar2,
+                            get_street nvarchar2 default '',
+                            get_house nvarchar2 default '')
+        is
         password_hash nvarchar2(200);
-        userlogin_id userlogin.id%type;
-        userpoint_id points.id%type;
+        userlogin_id  userlogin.id%type;
+        userpoint_id  points.id%type;
     begin
         password_hash := encrypt_password(password);
         insert into userlogin (login, password, role) values (get_login, password_hash, get_role);
         commit;
 
-        select id into userlogin_id from userlogin where userlogin.login = get_login ;
+        select id into userlogin_id from userlogin where userlogin.login = get_login;
         select id into userpoint_id from points where rtrim(POINT_NAME) = rtrim(get_userpoint_name);
-        insert into userprofile (email,userpointid, userloginid)
-        values (get_email,userpoint_id, userlogin_id);
+        insert into userprofile (email, userpointid, userloginid)
+        values (get_email, userpoint_id, userlogin_id);
         commit;
 
         --todo insert userpoint coordinates???
@@ -77,74 +83,106 @@ create or replace package body admin_package is
 
     --authorisation accaunt
     function authorisation(get_login nvarchar2,
-        get_password nvarchar2) return boolean
+                           get_password nvarchar2) return boolean
         is
         select_password userlogin.password%type;
         decode_password userlogin.password%type;
 
         no_such_profile_exception exception;
-        pragma exception_init(no_such_profile_exception, 100);
-            begin
-            select password into select_password from userlogin where login = get_login;
-            decode_password := admin_package.dencrypt_password(select_password);
-            return decode_password = get_password;
-            exception when no_such_profile_exception then
-                return false;
-        end authorisation;
+        pragma exception_init (no_such_profile_exception, 100);
+    begin
+        select password into select_password from userlogin where login = get_login;
+        decode_password := admin_package.dencrypt_password(select_password);
+        return decode_password = get_password;
+    exception
+        when no_such_profile_exception then
+            return false;
+    end authorisation;
 
-        procedure add_good(good_name goods.name%type,
+    procedure add_good(good_name goods.name%type,
                        good_description goods.description%type,
                        good_price goods.price%type)
-            is
-            begin
-                insert into goods (name,description, price)
-                values (good_name, good_description, good_price);
-                commit;
-            end add_good;
-
-         --add goodstoorder
-          procedure add_goods_to_order(order_id orders.id%type, good_id goods.id%type)
-         is begin
-             insert into goodstoorder values (order_id, good_id);
-             commit;
-             end;
-
-        --change order executor and deliverypoint
-         procedure change_executor_and_delivery_point(order_id orders.id%type,
-                                    executor_id orders.excecutorprofileid%type, deliverypoint_id orders.deliverylocationid%type)
-         is
-             begin
-                 update orders set excecutorprofileid = executor_id, deliverylocationid = deliverypoint_id
-                               where orders.id = order_id;
-                 commit;
-            end change_executor_and_delivery_point;
-
-         ------------support functions-----------------
-function encrypt_password(password varchar2) return userlogin.password%type
-    is
-    hash_password userlogin.password%type;
+        is
     begin
-        hash_password :=  utl_encode.text_encode(password,'AL32UTF8',UTL_ENCODE.BASE64);
+        insert into goods (name, description, price)
+        values (good_name, good_description, good_price);
+        commit;
+    end add_good;
+
+    --add goodstoorder
+    procedure add_goods_to_order(order_id orders.id%type, good_id goods.id%type)
+        is
+    begin
+        insert into goodstoorder values (order_id, good_id);
+        commit;
+    end;
+
+    --change order executor and deliverypoint
+    procedure change_executor_and_delivery_point(order_id orders.id%type,
+                                                 executor_id orders.excecutorprofileid%type,
+                                                 deliverypoint_id orders.deliverylocationid%type)
+        is
+    begin
+        update orders
+        set excecutorprofileid = executor_id,
+            deliverylocationid = deliverypoint_id
+        where orders.id = order_id;
+        commit;
+    end change_executor_and_delivery_point;
+
+    ------------support functions-----------------
+    function encrypt_password(password varchar2) return userlogin.password%type
+        is
+        hash_password userlogin.password%type;
+    begin
+        hash_password := utl_encode.text_encode(password, 'AL32UTF8', UTL_ENCODE.BASE64);
         return hash_password;
     end encrypt_password;
 
-function dencrypt_password(password_hash varchar2) return varchar2
-    is
+    function dencrypt_password(password_hash varchar2) return varchar2
+        is
     begin
-        return utl_encode.text_decode(password_hash,'AL32UTF8',UTL_ENCODE.BASE64);
+        return utl_encode.text_decode(password_hash, 'AL32UTF8', UTL_ENCODE.BASE64);
     end dencrypt_password;
+
+    --get unprocessed orders
+    function get_unprocessed_orders return sys_refcursor
+        is
+        unprocessed_orders_cursor sys_refcursor;
+    begin
+        open unprocessed_orders_cursor for select o1.ordername    as order_name,
+                                                  o1.orderdate    as order_date,
+                                                  o1.deliverydate as delivery_date,
+                                                  g.name as good_name,
+                                                  userlogin.login     as executor_login,
+                                                  (select userlogin.login from orders o2
+                                                                          join userprofile
+                                                                          on o2.customerprofileid = userprofile.id join
+                                                                            userlogin on userprofile.userloginid = userlogin.id
+                                                                          where o2.id= o1.id)
+                                                      as customer_login
+                                           from orders o1 join goodstoorder gto on o1.id = gto.orderid
+                                               join goods g on gto.goodsid = g.id
+                                                    join USERPROFILE
+                                                         on o1.excecutorprofileid = userprofile.id
+                                                    join userlogin
+                                                         on userprofile.userloginid = userlogin.id
+                                           where o1.status = 'unprocessed';
+        return unprocessed_orders_cursor;
+    end;
 end admin_package;
+
 
 --test get_all_persons_by_role
 declare
     info sys_refcursor;
-    row nvarchar2(10);
+    row  nvarchar2(10);
 begin
-   info := admin_package.get_all_persons_by_role('user', 'asd');
+    info := admin_package.get_all_persons_by_role('user', 'asd');
     loop
         fetch info into row;
         exit when info%notfound;
-       dbms_output.put_line(row);
-       end loop;
+        dbms_output.put_line(row);
+    end loop;
 end;
 

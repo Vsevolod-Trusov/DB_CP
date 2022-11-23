@@ -9,7 +9,9 @@ import java.util.Date;
 @Setter
 public class Order {
     private String customerLogin;
+    private String executorLogin;
     private String goodName;
+    private String orderName;
     private Date orderDate;
     private Date deliveryDate;
 }

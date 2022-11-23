@@ -3,6 +3,7 @@ package by.spring.promo.promoDB.controller;
 import by.spring.promo.promoDB.entity.UserLogin;
 import by.spring.promo.promoDB.service.AdminService;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +33,11 @@ public class AdminController {
     @GetMapping("/hello")
     public String getHello() {
         return "Hello";
+    }
+
+    @GetMapping("/orders")
+    public ResponseEntity<List> getUnprocessedOrders() {
+        return ResponseEntity.ok(adminService.findUnprocessedOrders());
     }
 
 }

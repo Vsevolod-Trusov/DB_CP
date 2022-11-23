@@ -24,4 +24,9 @@ public class AdminService {
     public List<UserLogin> findAllPersonsByRole(String role) {
         return adminRepository.findAllPersonsByRole(role);
     }
+
+    @Transactional
+    public List findUnprocessedOrders(){
+        return adminRepository.findUnprocessedOrders();
+    }
 }

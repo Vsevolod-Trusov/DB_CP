@@ -5,6 +5,8 @@ import by.spring.promo.promoDB.entity.Order;
 import by.spring.promo.promoDB.entity.Review;
 import by.spring.promo.promoDB.exception.DataNotFoundException;
 import by.spring.promo.promoDB.rowmapper.GoodRowMapper;
+import by.spring.promo.promoDB.rowmapper.HistoryRowMapper;
+import by.spring.promo.promoDB.rowmapper.OrderRowMapper;
 import by.spring.promo.promoDB.rowmapper.ReviewMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -80,7 +82,7 @@ public class CustomerRepository {
         }
     }
 
-    public void addOrder(Order getOrder){
+    public String addOrder(Order getOrder){
         SimpleJdbcCall insertOrder = new SimpleJdbcCall(customerJdbcTemplate)
                 .withSchemaName("ADMIN")
                 .withCatalogName("user_package")
@@ -94,5 +96,42 @@ public class CustomerRepository {
                                                           .addValue("get_data_order", getOrder.getOrderDate())
                                                           .addValue("get_delivery_date", getOrder.getDeliveryDate());
         String order = insertOrder.executeFunction(String.class, in);
+        return order;
     }
+
+    public List getNotExecutedOrdersByLogin(String getLogin){
+        SimpleJdbcCall getOrders = new SimpleJdbcCall(customerJdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("user_package")
+                .withFunctionName("get_orders_not_executed_by_login")
+                .declareParameters(new SqlParameter("user_login", Types.NVARCHAR))
+                .returningResultSet("orders", new OrderRowMapper());
+        SqlParameterSource in = new MapSqlParameterSource().addValue("user_login", getLogin);
+        List ordersList =  getOrders.executeFunction(List.class, in);
+        return ordersList;
+    }
+
+    public List getHistoryByLogin(String getLogin){
+        SimpleJdbcCall getHistory = new SimpleJdbcCall(customerJdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("user_package")
+                .withFunctionName("get_history_by_login")
+                .declareParameters(new SqlParameter("customer_login", Types.NVARCHAR))
+                .returningResultSet("history", new HistoryRowMapper());
+        SqlParameterSource in = new MapSqlParameterSource().addValue("customer_login", getLogin);
+        List historyList =  getHistory.executeFunction(List.class, in);
+        return historyList;
+    }
+
+    public void deleteOrderByName(String orderName){
+        SimpleJdbcCall deleteOrder = new SimpleJdbcCall(customerJdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("user_package")
+                .declareParameters(new SqlParameter("order_name", Types.NVARCHAR))
+                .withProcedureName("delete_order_by_name");
+        SqlParameterSource in = new MapSqlParameterSource().addValue("order_name", orderName);
+        deleteOrder.execute(in);
+    }
+
+
 }

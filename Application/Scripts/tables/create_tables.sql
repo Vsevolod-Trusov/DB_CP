@@ -28,10 +28,9 @@ CREATE TABLE UserProfile(
     USERLOGINID RAW(32) DEFAULT SYS_GUID(),
     USERPOINTID RAW(32) DEFAULT SYS_GUID(),
     CONSTRAINT PK_USERPROFILE_ID primary key(ID),
-    CONSTRAINT FK_USERPROFILE_USERLOGINID foreign key(USERLOGINID) references UserLogin(ID),
+    CONSTRAINT FK_USERPROFILE_USERLOGINID foreign key(USERLOGINID) references UserLogin(ID) on delete cascade ,
     constraint FK_USERPROFILE_USERPOINTID foreign key(USERPOINTID) references POINTS(ID)
 );
-
 
 CREATE TABLE Goods(
     ID RAW(32) DEFAULT SYS_GUID(),
@@ -104,10 +103,14 @@ CREATE TABLE History(
     ORDERID RAW(32) DEFAULT SYS_GUID(),
     ORDERNAME nvarchar2(100),
     STATUS NVARCHAR2(12) DEFAULT 'unprocessed',
+    USERPROFILEID RAW(32) DEFAULT SYS_GUID(),
+    CONSTRAINT FK_HISTORY_USERPROFILEID foreign key (USERPROFILEID) references UserProfile(ID) on delete cascade,
     CONSTRAINT PK_HISTORY_ID primary key (ID),
     CONSTRAINT FK_HISTORY_ORDERID foreign key (ORDERID) references Orders(ID) on delete cascade ,
     CONSTRAINT CHECK_HISTORY_STATUS CHECK(STATUS like 'unprocessed' OR STATUS like 'processed' OR STATUS like 'executed')
                     );
+
+
 
 DROP TABLE SHAPES;
 CREATE TABLE SHAPES

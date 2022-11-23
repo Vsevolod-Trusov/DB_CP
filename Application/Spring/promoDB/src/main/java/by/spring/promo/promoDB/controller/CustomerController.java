@@ -39,9 +39,25 @@ public class CustomerController {
     }
 
     @PostMapping("/order")
-    public ResponseEntity<String> getGood(@RequestBody Order getOrder) {
-        customerService.addOrder(getOrder);
-        return ResponseEntity.ok("Order added successfully");
+    public ResponseEntity<String> addOrder(@RequestBody Order getOrder) {
+        String orderName = customerService.addOrder(getOrder);
+        return ResponseEntity.ok("Order "+orderName+" added successfully");
+    }
+
+    @GetMapping("/history/{login}")
+    public ResponseEntity<List> getHistory(@PathVariable String login) {
+        return ResponseEntity.ok(customerService.getHistoryByLogin(login));
+    }
+
+    @DeleteMapping("/order/{orderName}")
+    public ResponseEntity<String> deleteOrder(@PathVariable String orderName) {
+        customerService.deleteOrderByName(orderName);
+        return ResponseEntity.ok("Order with name: " + orderName + " deleted successfully");
+    }
+
+    @PostMapping("/orders/{customerLogin}")
+    public ResponseEntity<List> getOrders(@PathVariable String customerLogin) {
+        return ResponseEntity.ok(customerService.getNotExecutedOrdersByLogin(customerLogin));
     }
 
 }

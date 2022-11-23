@@ -36,7 +36,22 @@ public class CustomerService {
     }
 
     @Transactional
-    public void addOrder(Order getOrder) {
-        customerRepository.addOrder(getOrder);
+    public String addOrder(Order getOrder) {
+        return customerRepository.addOrder(getOrder);
     }
+    @Transactional
+    public List getHistoryByLogin(String login) {
+        return customerRepository.getHistoryByLogin(login);
+    }
+
+    @Transactional
+    public void deleteOrderByName(String orderName) {
+        customerRepository.deleteOrderByName(orderName);
+    }
+
+    @Transactional
+    public List getNotExecutedOrdersByLogin(String login) {
+        return customerRepository.getNotExecutedOrdersByLogin(login);
+    }
+
 }

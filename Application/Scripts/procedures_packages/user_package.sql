@@ -6,20 +6,23 @@ create or replace package user_package as
     --add order
    function add_order(customer_login userlogin.login%type, good_name goods.name%type,
                        get_data_order date default sysdate, get_delivery_date date) return orders.ordername%type;
+   --get orders by login
+        function get_orders_not_executed_by_login(user_login userlogin.login%type) return sys_refcursor;
     --add history
-   procedure add_history(order_id orders.id%type,order_name orders.ordername%type, order_status orders.status%type);
-
+   procedure add_history(order_id orders.id%type,customer_login userlogin.login%type, order_name orders.ordername%type, order_status orders.status%type);
+    --get history
+        function get_history_by_login(customer_login userlogin.login%type) return sys_refcursor;
     --get good id
     function get_good_id(good_name goods.name%type, good_description goods.description%type,
                             good_price goods.price%type) return goods.id%type;
     --get all goods
     function get_all_goods return sys_refcursor;
 
-     --get good by name
+    --get good by name
     function get_good_by_name(good_name goods.name%type) return sys_refcursor; --return goods%rowtype;
 
     --delete order
-    procedure delete_order_by_id(order_id orders.id%type);
+    procedure delete_order_by_name(order_name orders.ordername%type);
     --add review
     procedure add_review(get_content reviews.content%type, get_estimation reviews.estimation%type,
                             get_login userlogin.login%type);
@@ -70,13 +73,15 @@ create or replace package body user_package as
         insert into orders (customerprofileid, excecutorprofileid, deliverylocationid, status, userlocationid, orderdate, deliverydate)
         values (customer_profile_id, executor_profile_id, start_deliverylocation, unprocessed_status, userlocation_id, get_data_order, get_delivery_date)
         returning id into order_id;
+        commit;
 
         order_name := 'order_'||order_id;
         update orders set ORDERNAME= order_name where orders.id = order_id;-- into orders(ordername) values (order_name);
         commit;
 
         select goods.id into good_id from goods where goods.name = good_name;
-        user_package.add_history(order_id,order_name, unprocessed_status);
+        DBMS_OUTPUT.PUT_LINE(customer_profile_id);
+        user_package.add_history(order_id,customer_login,order_name, unprocessed_status);
         admin_package.add_goods_to_order(order_id, good_id );
         return order_name;
         exception when no_such_profile_exception then
@@ -85,13 +90,63 @@ create or replace package body user_package as
             raise other_exception;
     end add_order;
 
+    --get orders by login
+        function get_orders_not_executed_by_login(user_login userlogin.login%type) return sys_refcursor
+        is
+            orders_cursor sys_refcursor;
+                begin
+                    open orders_cursor for select o1.ordername as order_name,
+                                                  o1.orderdate as order_date,
+                                                  o1.deliverydate as delivery_date,
+                                                    goods.name as good_name,
+                                                    userlogin.login     as customer_login,
+                                                  (select userlogin.login from orders o2
+                                                                          join userprofile
+                                                                          on o2.excecutorprofileid = userprofile.id join
+                                                                            userlogin on userprofile.userloginid = userlogin.id
+                                                                          where o2.id= o1.id) as executor_login
+                                                  from orders o1 join goodstoorder on
+                                                      o1.id = goodstoorder.orderid join goods
+                                                          on goodstoorder.goodsid = goods.id join
+                                                      userprofile
+                                                      on o1.CUSTOMERPROFILEID = userprofile.id
+                                                      join userlogin on userprofile.userloginid = userlogin.ID
+                                                        where userlogin.login = user_login and
+                                                              o1.status != 'executed';
+                    return orders_cursor;
+                    end get_orders_not_executed_by_login;
+
     --add history
-    procedure add_history(order_id orders.id%type,order_name orders.ordername%type, order_status orders.status%type)
+    procedure add_history(order_id orders.id%type,
+    customer_login userlogin.login%type,
+    order_name orders.ordername%type,
+    order_status orders.status%type)
     is
+        customer_profile_id userprofile.id%type;
     begin
-        insert into history(orderid,ordername, status) values (order_id, order_name, order_status);
+        select userprofile.id into customer_profile_id from userprofile join USERLOGIN
+            on userprofile.userloginid = userlogin.id where userlogin.login = customer_login;
+
+        insert into history(orderid,userprofileid,ordername, status)
+        values (order_id,customer_profile_id, order_name, order_status);
         commit;
     end add_history;
+
+    --get customer history
+        function get_history_by_login(customer_login userlogin.login%type) return sys_refcursor
+        is
+            history_cursor sys_refcursor;
+            begin
+                open history_cursor for select g.name as name, h.status as status,
+                                               o.orderdate as order_date, o.deliverydate as delivery_date
+                                               from orders o join history h on h.orderid = o.id
+                                                   join userprofile u on o.customerprofileid = u.id
+                                                   join userlogin ul on  u.userloginid = ul.id
+                                               join goodstoorder gto on o.id = gto.orderid
+                                                   join goods g on gto.goodsid = g.id
+                                                    where ul.login =  customer_login;
+                return history_cursor;
+            end get_history_by_login;
 
     --get good id не нужно
      function get_good_id(good_name goods.name%type, good_description goods.description%type,
@@ -127,11 +182,11 @@ create or replace package body user_package as
             end;
 
     --delete order by id
-        procedure delete_order_by_id(order_id orders.id%type)
+        procedure delete_order_by_name(order_name orders.ordername%type)
     is begin
-        delete from orders where orders.id = order_id ;
+        delete from orders where orders.ordername = order_name ;
         commit;
-        end delete_order_by_id;
+        end delete_order_by_name;
 
     --add review
     procedure add_review(get_content reviews.content%type, get_estimation reviews.estimation%type,

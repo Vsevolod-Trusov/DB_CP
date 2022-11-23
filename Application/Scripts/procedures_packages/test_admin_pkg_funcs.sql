@@ -54,6 +54,13 @@ begin
 admin_package.change_executor_and_delivery_point(order_id, executor_id, deliverylocation_id);
 end;
 
+--test get unprocessed orders
+declare
+    test_cursor sys_refcursor;
+    begin
+    test_cursor := admin_package.GET_UNPROCESSED_ORDERS();
+end;
+
    /*SELECT SDO_GCDR.GEOCODE_AS_GEOMETRY('ADMIN',
   SDO_KEYWORDARRAY('1 Carlton B Goodlett Pl', 'San Francisco, CA  94102'),
   'US') FROM DUAL;*/

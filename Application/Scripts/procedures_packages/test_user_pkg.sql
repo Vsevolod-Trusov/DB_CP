@@ -10,7 +10,24 @@ dbms_output.put_line(user_package.add_order(
     good_name,
     '21.11.2022', '22.11.2022'));
 end;--todo: протестировать
+declare
+    history sys_refcursor;
+    good_name goods.name%type;
+    order_date orders.ORDERDATE%type;
+    delivery_date orders.DELIVERYDATE%type;
+    status HISTORY.STATUS%type;
+begin
+    history:= user_package.GET_HISTORY_BY_LOGIN('user');
+    fetch history into good_name;
+    dbms_output.put_line(good_name);
+    end;
 
+begin
+    user_package.ADD_HISTORY('EE2596160F4C0408E053020014AC37D9',
+        'user',
+        'order_EE2596160F4C0408E053020014AC37D9',
+        'unprocessed');
+end;
 --test add and then delete order
 declare
     good_id goods.id%type;
