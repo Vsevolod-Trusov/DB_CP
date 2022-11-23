@@ -24,6 +24,9 @@ GRANT
     CREATE SESSION
 TO STAFF_ROLE;
 
+grant select on ADMIN.Reviews to staff_role;
+grant select on ADMIN.userlogin to staff_role;
+
 GRANT EXECUTE ON admin.staff_package TO STAFF_ROLE;
 
 

@@ -1,6 +1,12 @@
 --test register
 begin
-    admin_package.register_user('executor', 'qwerty', 'staff', 'executor');
+    admin_package.register_user('admin','Ленина 20', 'qwerty', 'admin', 'admin');
+end;
+begin
+    admin_package.register_user('executor','Ленина 20', 'qwerty', 'staff', 'admin');
+end;
+begin
+    admin_package.register_user('user','Беларуская 21', 'qwerty', 'user', 'user');
 end;
 select * from USERLOGIN;
 select * from userprofile;
@@ -9,7 +15,7 @@ select * from userprofile;
 declare
     auth_success boolean;
 begin
-    auth_success := admin_package.authorisation('seva', 'qwe5');
+    auth_success := admin_package.authorisation('admin_test', 'qwerty');
     if auth_success then
         dbms_output.put_line('exists');
     else

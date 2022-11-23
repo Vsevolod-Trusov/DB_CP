@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 @RequestMapping("/api/admin")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class AdminController {
-    private final Logger log = Logger.getLogger(UserController.class.getName());
+    private final Logger log = Logger.getLogger(CustomerController.class.getName());
     private final AdminService adminService;
     private final ModelMapper modelMapper;
 

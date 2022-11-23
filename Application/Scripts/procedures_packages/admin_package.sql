@@ -7,6 +7,7 @@ create or replace package admin_package is
     function get_all_persons_by_role(role nvarchar2) return sys_refcursor;
     --register user
     procedure register_user(get_login nvarchar2,
+        get_userpoint_name points.point_name%type,
         password nvarchar2,
         get_role nvarchar2,
         get_email nvarchar2,
@@ -49,7 +50,8 @@ create or replace package body admin_package is
         end get_all_persons_by_role;
 
     --register user
-    procedure register_user(get_login nvarchar2,
+     procedure register_user(get_login nvarchar2,
+        get_userpoint_name points.point_name%type,
         password nvarchar2,
         get_role nvarchar2,
         get_email nvarchar2,
@@ -58,18 +60,19 @@ create or replace package body admin_package is
     is
         password_hash nvarchar2(200);
         userlogin_id userlogin.id%type;
+        userpoint_id points.id%type;
     begin
         password_hash := encrypt_password(password);
         insert into userlogin (login, password, role) values (get_login, password_hash, get_role);
         commit;
 
         select id into userlogin_id from userlogin where userlogin.login = get_login ;
-
-        insert into userprofile (email, userloginid) values (get_email, userlogin_id);
+        select id into userpoint_id from points where rtrim(POINT_NAME) = rtrim(get_userpoint_name);
+        insert into userprofile (email,userpointid, userloginid)
+        values (get_email,userpoint_id, userlogin_id);
         commit;
 
         --todo insert userpoint coordinates???
-        null;
     end register_user;
 
     --authorisation accaunt

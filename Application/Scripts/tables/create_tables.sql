@@ -7,10 +7,9 @@ drop table Reviews;
 
 drop table Orders;
 drop table GoodsToOrder;
-drop table DeliveryPoints;
-drop table UserPoints;
 drop table Links;
 drop table History;
+drop table Points;
 ---drop tables---
 CREATE TABLE UserLogin(
     ID RAW(32) DEFAULT SYS_GUID(),
@@ -27,9 +26,12 @@ CREATE TABLE UserProfile(
     ID RAW(32) DEFAULT SYS_GUID(),
     EMAIL NVARCHAR2(50) default null,
     USERLOGINID RAW(32) DEFAULT SYS_GUID(),
+    USERPOINTID RAW(32) DEFAULT SYS_GUID(),
     CONSTRAINT PK_USERPROFILE_ID primary key(ID),
-    CONSTRAINT FK_USERPROFILE_USERLOGINID foreign key(USERLOGINID) references UserLogin(ID)
+    CONSTRAINT FK_USERPROFILE_USERLOGINID foreign key(USERLOGINID) references UserLogin(ID),
+    constraint FK_USERPROFILE_USERPOINTID foreign key(USERPOINTID) references POINTS(ID)
 );
+
 
 CREATE TABLE Goods(
     ID RAW(32) DEFAULT SYS_GUID(),
@@ -38,6 +40,7 @@ CREATE TABLE Goods(
     PRICE NUMBER (5,2),
     CONSTRAINT PK_GOODS_ID primary key(ID)
 );
+alter table GOODS add CONSTRAINT UNIQUE_GOODS_NAME unique (NAME);
 
 CREATE TABLE Reviews(
     ID RAW(32) DEFAULT SYS_GUID(),
@@ -49,31 +52,25 @@ CREATE TABLE Reviews(
 );
 
 
-
-CREATE TABLE DeliveryPoints(
+CREATE TABLE POINTS
+(
     ID RAW(32) DEFAULT SYS_GUID(),
-    NAME NVARCHAR2(50) not null,
     LOCATION SDO_GEOMETRY,
-    CONSTRAINT PK_DELIVERYPOINTS_ID primary key (ID)
+    POINT_NAME nvarchar2(100) unique not null,
+    TYPE nvarchar2(10) not null,
+    CONSTRAINT PK_POINTS_ID primary key (ID),
+    CONSTRAINT CHECK_POINTS_TYPE CHECK(TYPE like 'staff' OR TYPE like 'user')
 );
 
-CREATE TABLE UserPoints(
-    ID RAW(32) DEFAULT SYS_GUID(),
-    USERPROFILEID RAW(32) DEFAULT SYS_GUID(),
-    LOCATION SDO_GEOMETRY,
-    CONSTRAINT PK_USERPOINTS_ID primary key (ID),
-    CONSTRAINT FK_USERPOINTS_USERPROFILEID foreign key (USERPROFILEID) references UserProfile(ID)
-);
-alter table userpoints add STREET nvarchar2(50);
-alter table userpoints add HOUSE number;
+SELECT ROAD FROM ROADS  where sdo_relate(roads.road, 'mask=anyinteract') = 'TRUE';
 
 CREATE TABLE Links(
     ID RAW(32) DEFAULT SYS_GUID(),
     STARTPOINTID RAW(32) DEFAULT SYS_GUID(),
     ENDPOINTID RAW(32) DEFAULT SYS_GUID(),
     CONSTRAINT PK_LINKS_ID primary key (ID),
-    CONSTRAINT FK_LINKS_ENDPOINTID foreign key (ENDPOINTID) references DeliveryPoints(ID),
-    CONSTRAINT FK_LINKS_STARTPOINTID foreign key (STARTPOINTID) references UserPoints(ID)
+    CONSTRAINT FK_LINKS_ENDPOINTID foreign key (ENDPOINTID) references POINTS(ID),
+    CONSTRAINT FK_LINKS_STARTPOINTID foreign key (STARTPOINTID) references POINTS(ID)
 );
 
 CREATE TABLE GoodsToOrder(
@@ -85,6 +82,7 @@ CREATE TABLE GoodsToOrder(
 
 CREATE TABLE Orders(
     ID RAW(32) DEFAULT SYS_GUID(),
+    ORDERNAME NVARCHAR2(100) unique,
     CUSTOMERPROFILEID RAW(32) DEFAULT SYS_GUID() NOT NULL,
     EXCECUTORPROFILEID RAW(32) DEFAULT SYS_GUID() null,
     STATUS NVARCHAR2(12),
@@ -95,8 +93,8 @@ CREATE TABLE Orders(
     CONSTRAINT PK_ORDERS_ID primary key(ID),
     CONSTRAINT FK_ORDERS_CUSTOMERPROFILEID foreign key (CUSTOMERPROFILEID) references UserProfile(ID),
     CONSTRAINT FK_ORDERS_EXCECUTORPROFILEID foreign key (EXCECUTORPROFILEID) references UserProfile(ID),
-    CONSTRAINT FK_ORDERS_USERLCATIONID foreign key (USERLOCATIONID) references UserPoints(ID),
-    CONSTRAINT FK_ORDERS_DELIVERYLOCATIONID foreign key (DELIVERYLOCATIONID) references DeliveryPoints(ID),
+    CONSTRAINT FK_ORDERS_USERLCATIONID foreign key (USERLOCATIONID) references POINTS(ID),
+    CONSTRAINT FK_ORDERS_DELIVERYLOCATIONID foreign key (DELIVERYLOCATIONID) references POINTS(ID),
     CONSTRAINT CHECK_ORDERS_STATUS CHECK(STATUS like 'unprocessed' OR STATUS like 'processed' OR STATUS like 'executed')
                    );
 
@@ -104,14 +102,12 @@ CREATE TABLE Orders(
 CREATE TABLE History(
     ID RAW(32) DEFAULT SYS_GUID(),
     ORDERID RAW(32) DEFAULT SYS_GUID(),
+    ORDERNAME nvarchar2(100),
     STATUS NVARCHAR2(12) DEFAULT 'unprocessed',
     CONSTRAINT PK_HISTORY_ID primary key (ID),
     CONSTRAINT FK_HISTORY_ORDERID foreign key (ORDERID) references Orders(ID) on delete cascade ,
     CONSTRAINT CHECK_HISTORY_STATUS CHECK(STATUS like 'unprocessed' OR STATUS like 'processed' OR STATUS like 'executed')
                     );
-
-alter table deliverypoints add STREET nvarchar2(50);
-alter table deliverypoints add HOUSE number;
 
 DROP TABLE SHAPES;
 CREATE TABLE SHAPES
@@ -130,6 +126,20 @@ CREATE TABLE ROADS
     CONSTRAINT PK_ROADS_ID primary key (ID)
 );
 
+--deleted tables
+/*CREATE TABLE DeliveryPoints(
+    ID RAW(32) DEFAULT SYS_GUID(),
+    NAME NVARCHAR2(50) not null,
+    LOCATION SDO_GEOMETRY,
+    CONSTRAINT PK_DELIVERYPOINTS_ID primary key (ID)
+);
+
+CREATE TABLE UserPoints(
+    ID RAW(32) DEFAULT SYS_GUID(),
+    LOCATION SDO_GEOMETRY,
+    USERPOINT_NAME nvarchar2(100) unique not null,
+    CONSTRAINT PK_USERPOINTS_ID primary key (ID)
+);*/
 
 
 

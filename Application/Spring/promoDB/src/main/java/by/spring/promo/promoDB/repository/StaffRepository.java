@@ -34,7 +34,6 @@ public class StaffRepository {
                 .withSchemaName("ADMIN")
                 .withCatalogName("staff_package")
                 .withFunctionName("get_reviews")
-                .declareParameters(new SqlParameter("cursor_reviews", Types.REF_CURSOR))
                 .returningResultSet("reviews", new ReviewMapper());
         List reviews = simpleJdbcCall.executeFunction(List.class);
         return reviews;
