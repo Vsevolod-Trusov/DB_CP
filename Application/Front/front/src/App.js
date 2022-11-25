@@ -1,15 +1,15 @@
 import './App.css';
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import {BrowserRouter as Router, Navigate, Outlet, Route, Routes} from "react-router-dom";
-import Registration from "./pages/Registration";
+import Registration from "./pages/AuthRegMain/Registration";
 import React from "react";
-import Authorisation from "./pages/Authorisation";
+import Authorisation from "./pages/AuthRegMain/Authorisation";
 import AdminMain from "./pages/Admin/AdminMain";
 import AdminGoodsPage from "./pages/Admin/AdminGoodsPage";
 import AdminOrders from "./pages/Admin/AdminOrders";
 import AdminStaff from "./pages/Admin/AdminStaff";
 import Navbar from "./components/Navbar";
-import Main from "./pages/Main";
+import Main from "./pages/AuthRegMain/Main";
 import CustomerMain from "./pages/Customer/CustomerMain";
 import CustomerGoods from "./pages/Customer/CustomerGoods";
 import CustomerHistory from "./pages/Customer/CustomerHistory";
@@ -18,8 +18,11 @@ import CustomerReview from "./pages/Customer/CustomerReview";
 import StaffMain from "./pages/Staff/StaffMain";
 import StaffReviews from "./pages/Staff/StaffReviews";
 import StaffOrders from "./pages/Staff/StaffOrders";
+import CustomerOrderForm from "./pages/Customer/CustomerOrderForm";
 
 function App() {
+
+
     return (<div className="App">
         <Router>
             <Routes>
@@ -43,6 +46,7 @@ function App() {
                         <Route path={"/customer/main/history"} element={<CustomerHistory/>}/>
                         <Route path={"/customer/main/orders"} element={<CustomerOrders/>}/>
                         <Route path={"/customer/main/review"} element={<CustomerReview/>}/>
+                        <Route path={"/customer/main/orders/order"} render={(props) => <CustomerOrderForm {...props}/>}/>
                 </Route>
 
                 <Route path={"/staff/main"} element={<><Navbar staff="true"/><Outlet/></>}>

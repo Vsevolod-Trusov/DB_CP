@@ -1,29 +1,56 @@
-import React, { useState } from "react";
-import {useNavigate} from "react-router-dom";
+import React, {useEffect, useState} from "react";
+import {Link, useNavigate} from "react-router-dom";
 import Form from 'react-bootstrap/Form';
-import "../../node_modules/bootstrap/dist/css/bootstrap.min.css";
-import Navbar from "../components/Navbar";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Navbar from "../../components/Navbar";
 
 export default function Registration() {
+    let points=[];
     const navigate = useNavigate();
 
     const [user, setUser] = useState({
         login: "",
         password: "",
         email: "",
-        role: "user"
+        role: "user",
+        pointName: ""
     });
 
-    const { login, password, email, role } = user;
+    const [pointsList, setPointsList] = useState([]);
+    const [isDisabled, setIsDisabled] = useState(false);
+
+    const { login, password, email, role, pointName } = user;
+    useEffect(() => {
+        loadPoints()
+    }, []);
+    const loadPoints = () => {
+        fetch("http://localhost:8080/api/admin/points", {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            },
+        })
+            .then(response => {
+                if(response.status === 200){
+                    return response.json()
+                }
+                throw new Error(`${response.status}`)
+            }).then(data=>{
+              setPointsList([...data])
+        }).catch(error => {
+            alert(error)//todo fix drop alert
+        })
+
+    }
 
     const onInputChange = (e) => {
         setUser({ ...user, [e.target.name]: e.target.value});
+        console.log(e.target.value)
     };
 
     const onSubmit =  async (e) => {
         e.preventDefault();
-        navigate("/authorisation") //todo: удалить заглушку
-       /* await fetch("http://localhost:8080/api/auth/registration", {
+        await fetch("http://localhost:8080/api/admin/registration", {
             method: 'POST',
             headers: {
                 'Content-type': 'application/json',
@@ -33,7 +60,7 @@ export default function Registration() {
         })
             .then(response => {
 
-                if(response.status == 200){
+                if(response.status === 200){
                     navigate("/authorisation")
                     return response.text()
                 }
@@ -41,9 +68,8 @@ export default function Registration() {
             }).then(data=>{
                 console.log(data)
             }).catch(error => {
-                navigate("/error")
-                console.log(error)
-            })*/
+                alert(error)//todo fix drop alert
+            })
     };
 
     return (
@@ -105,20 +131,31 @@ export default function Registration() {
                             </Form.Select>
                         </div>
                         <div className="mb-3">
-                            <label htmlFor="Location" className="form-label">
+                            <label htmlFor="pointName" className="form-label">
                                 Region
                             </label>
-                            <Form.Select aria-label="Default select example"
-                                         name={"Location"} disabled={true}
-                                         value={role} onChange={(e)=>onInputChange(e)} >
-                                <option value={"user"}>user</option>
-                                <option value={"admin"}>admin</option>
-                                <option value={"staff"}>staff</option>
-                            </Form.Select>
+                            <select
+                                        className="form-select"
+                                        name="pointName" disabled={isDisabled}
+                                        value={pointName}
+                                        onChange={(e)=>onInputChange(e)}>
+                               {
+                                   role==='user'?  pointsList.filter(item => item.type === 'user').map((point, index) => (
+                                         <option key={index} value={point.pointName}>{point.pointName}</option>
+                                   )) : role === "staff" || role === "admin" ? pointsList.filter(item => item.type === 'staff').map((point, index) => (
+                                       <option key={index} value={point.pointName}>{point.pointName}</option>
+                                      )) : <option value={""}>Select role</option>
+                               }
+                            </select>
                         </div>
                         <button type="submit" className="btn btn-outline text-white"  style={{background: "#c402b4"}}>
                             Sign Up
                         </button>
+                        <div className="container mt-3">
+                            <Link to="/authorization">
+                                Sign Up?
+                            </Link>
+                        </div>
                     </form>
                 </div>
             </div>

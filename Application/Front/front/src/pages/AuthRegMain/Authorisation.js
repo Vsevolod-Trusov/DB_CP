@@ -1,15 +1,12 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
-import Navbar from "../components/Navbar";
 
 export default function Authorisation() {
 
     const navigate = useNavigate();
     const [user, setUser] = useState({
         login: "",
-        password: "",
-        role:"",
-        email:""
+        password: ""
     });
 
     const { login, password } = user;
@@ -20,10 +17,8 @@ export default function Authorisation() {
 
     const onSubmit =  async (e) => {
         e.preventDefault();
-//navigate("/admin/main") //todo: удалить заглушку
-//navigate("/customer/main") //todo: удалить заглушку
-navigate("/staff/main") //todo: удалить заглушку
-       /* await fetch("http://localhost:8080/api/auth/authorisation", {
+        console.log("here")
+        await fetch("http://localhost:8080/api/admin/authorization", {
             method: 'POST',
             headers: {
                 'Content-type': 'application/json',
@@ -33,17 +28,22 @@ navigate("/staff/main") //todo: удалить заглушку
         })
             .then(response => {
 
-                if(response.status == 200){
-                    navigate("/main")
-                    return response.text()
+                if (response.status === 200) {
+                    return response.json()
                 }
                 throw new Error(`${response.status}: ${response.text()}`)
-            }).then(data=>{
-                window.localStorage.setItem("token", `${data}`)
+            }).then(data => {
+                window.localStorage.setItem("login", `${data.login}`)
+                window.localStorage.setItem("role", `${data.role}`)
+                if (data.role === 'user')
+                    navigate("/customer/main")
+                else if (data.role === 'admin')
+                    navigate("/admin/main")
+                else if (data.role === 'staff')
+                    navigate("/staff/main")
             }).catch(error => {
-                navigate("/error")
-                console.log(error)
-            })*/
+                alert(error);
+            })
     };
 
     return (
@@ -79,7 +79,7 @@ navigate("/staff/main") //todo: удалить заглушку
                                 onChange={(e) => onInputChange(e)}
                             />
                         </div>
-                        <button type="submit" className="btn btn-outline-primary">
+                        <button type="submit" className="btn btn-outline-primary" onClick={(e)=>onSubmit(e)}>
                             Sign In
                         </button>
                         <div className="container mt-3">

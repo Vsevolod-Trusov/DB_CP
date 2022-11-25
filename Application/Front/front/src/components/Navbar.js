@@ -44,7 +44,7 @@ export default function Navbar(props) {
                                 Orders
                             </Link>
                             <Link className="btn btn-outline-light m-lg-1" to="/customer/main/review">
-                                Orders
+                                Review
                             </Link>
                         </div>
                         <Link className="btn btn-outline-light justify-content-end" to="/authorisation">
