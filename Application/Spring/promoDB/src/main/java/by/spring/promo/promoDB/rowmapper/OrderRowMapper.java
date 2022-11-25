@@ -13,6 +13,8 @@ public class OrderRowMapper implements RowMapper<Order> {
         order.setCustomerLogin(rs.getString("customer_login"));
         order.setOrderDate(rs.getDate("ORDER_DATE"));
         order.setDeliveryDate(rs.getDate("DELIVERY_DATE"));
+        order.setUserAddress(rs.getString("user_point"));
+        order.setDeliveryAddress(rs.getString("delivery_point"));
         return order;
     }
 }

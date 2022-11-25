@@ -1,15 +1,21 @@
 package by.spring.promo.promoDB.repository;
 
-import by.spring.promo.promoDB.rowmapper.OrderRowMapper;
+import by.spring.promo.promoDB.entity.Authorization;
+import by.spring.promo.promoDB.entity.UserLogin;
+import by.spring.promo.promoDB.exception.DataNotFoundException;
+import by.spring.promo.promoDB.rowmapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Types;
 import java.util.List;
 
 @Repository
@@ -35,6 +41,48 @@ public class AdminRepository {
     }
 
     @Transactional
+    public void register(String getLogin, String getPassword, String getRole, String getEmail,
+                         String getPointName) {
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .declareParameters(new SqlParameter("get_login", Types.NVARCHAR),
+                    new SqlParameter("get_userpoint_name", Types.NVARCHAR),
+                    new SqlParameter("password", Types.NVARCHAR),
+                    new SqlParameter("get_role", Types.NVARCHAR),
+                    new SqlParameter("get_email", Types.NVARCHAR))
+                .withProcedureName("register_user");
+
+        SqlParameterSource in = new MapSqlParameterSource()
+                .addValue("get_login", getLogin)
+                .addValue("get_userpoint_name", getPointName)
+                .addValue("password", getPassword)
+                .addValue("get_role", getRole)
+                .addValue("get_email", getEmail);
+
+            simpleJdbcCall.execute(in);
+    }
+
+    @Transactional
+    public Authorization authorization(String getLogin, String getPassword){
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .declareParameters(new SqlParameter("get_login", Types.NVARCHAR),
+                        new SqlParameter("get_password", Types.NVARCHAR))
+                .withFunctionName("authorisation")
+                .returningResultSet("result", new AuthorizationRowMapper());
+
+        SqlParameterSource in = new MapSqlParameterSource()
+                .addValue("get_login", getLogin)
+                .addValue("get_password", getPassword);
+
+        List userLogin =  simpleJdbcCall.executeFunction(List.class, in);
+        Authorization authorization = (Authorization) userLogin.get(0);
+        return authorization;
+    }
+
+    @Transactional
     public List findUnprocessedOrders() {
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withSchemaName("ADMIN")
@@ -44,5 +92,58 @@ public class AdminRepository {
 
         List res = simpleJdbcCall.executeFunction(List.class);
         return res;
+    }
+
+    @Transactional
+    public void updateOrderSetExecutorAndDeliveryPoint(String getOrderName,String getExecutorLogin,
+                                                       String getDeliveryPointName) {
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package").
+                declareParameters(new SqlParameter("order_name", Types.NVARCHAR),
+                                    new SqlParameter("order_executor_login", Types.NVARCHAR),
+                                    new SqlParameter("deliverypoint_name", Types.NVARCHAR))
+                .withProcedureName("update_order_executor_deliverypoint");
+
+        SqlParameterSource in = new MapSqlParameterSource()
+                .addValue("order_name", getOrderName)
+                .addValue("order_executor_login", getExecutorLogin)
+                .addValue("deliverypoint_name", getDeliveryPointName);
+
+
+        simpleJdbcCall.execute(in);
+    }
+
+    @Transactional
+    public List getAnalysisBetweenTwoPointsInfo(String customerPointName) {
+       try{
+           SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                   .withSchemaName("ADMIN")
+                   .withCatalogName("admin_package").
+                   declareParameters(new SqlParameter("customer_point_name", Types.NVARCHAR))
+                   .withFunctionName("get_route_length_analysis")
+                   .returningResultSet("route_length_analysis", new RouteRowMapper());
+
+           SqlParameterSource in = new MapSqlParameterSource()
+                   .addValue("customer_point_name", customerPointName);
+
+
+           List route_analysis =  simpleJdbcCall.executeFunction(List.class, in);
+           return route_analysis;
+       }catch(DataIntegrityViolationException notFoundException){
+           throw new DataNotFoundException("No such customer point "+customerPointName);
+       }
+    }
+
+    public List getAllPointNames() {
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .withFunctionName("get_all_points_name")
+                .returningResultSet("points", new PointRowMapper());
+
+
+        List points =  simpleJdbcCall.executeFunction(List.class);
+        return points;
     }
 }

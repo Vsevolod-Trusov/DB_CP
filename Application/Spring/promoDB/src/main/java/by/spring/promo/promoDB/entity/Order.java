@@ -14,4 +14,6 @@ public class Order {
     private String orderName;
     private Date orderDate;
     private Date deliveryDate;
+    private String userAddress;
+    private String deliveryAddress;
 }

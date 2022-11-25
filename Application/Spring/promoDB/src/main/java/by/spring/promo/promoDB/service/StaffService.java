@@ -21,4 +21,15 @@ public class StaffService {
     public List<Review> findAllReviews() {
         return staffRepository.findAllReviews();
     }
+
+    @Transactional
+    public void updateOrderStatus(String getOrderName, String getStatus)
+    {
+        staffRepository.updateOrderStatus(getOrderName, getStatus);
+    }
+
+    @Transactional
+    public List getOrdersByStaffLogin(String staffLogin) {
+        return staffRepository.getOrdersByStaffLogin(staffLogin);
+    }
 }

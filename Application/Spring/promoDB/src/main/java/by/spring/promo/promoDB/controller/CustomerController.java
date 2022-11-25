@@ -1,10 +1,8 @@
 package by.spring.promo.promoDB.controller;
 
-import by.spring.promo.promoDB.entity.Good;
-import by.spring.promo.promoDB.entity.Order;
-import by.spring.promo.promoDB.entity.Review;
+import by.spring.promo.promoDB.entity.*;
 import by.spring.promo.promoDB.exception.DataNotFoundException;
-import by.spring.promo.promoDB.rowmapper.GoodRowMapper;
+import by.spring.promo.promoDB.service.AdminService;
 import by.spring.promo.promoDB.service.CustomerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,11 +15,25 @@ import java.util.List;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final AdminService adminService;
 
-    public CustomerController(CustomerService customerService) {
+    public CustomerController(CustomerService customerService, AdminService adminService) {
         this.customerService = customerService;
+        this.adminService = adminService;
     }
 
+    @PostMapping("/registration")
+    public ResponseEntity<String> registration(@RequestBody UserLogin userLogin) {
+        adminService.registerUserNote(userLogin.getLogin(), userLogin.getPassword(),
+                userLogin.getRole(), userLogin.getEmail(), userLogin.getPointName());
+        return ResponseEntity.ok("User "+ userLogin.getLogin()+" registered");
+    }
+
+    @PostMapping("/authorization")
+    public ResponseEntity<Authorization> authorization(@RequestBody UserLogin getAuthorization) {
+        return ResponseEntity.ok(adminService.authorizationUserNote(getAuthorization.getLogin(),
+                getAuthorization.getPassword()));
+    }
     @PostMapping("/review")
     public ResponseEntity<String> addReview(@RequestBody Review getReview) throws DataNotFoundException {
         customerService.addReview(getReview);

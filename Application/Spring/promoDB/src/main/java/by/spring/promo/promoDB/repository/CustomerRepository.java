@@ -83,20 +83,24 @@ public class CustomerRepository {
     }
 
     public String addOrder(Order getOrder){
-        SimpleJdbcCall insertOrder = new SimpleJdbcCall(customerJdbcTemplate)
-                .withSchemaName("ADMIN")
-                .withCatalogName("user_package")
-                .withFunctionName("add_order")
-                .declareParameters(new SqlParameter("customer_login", Types.NVARCHAR),
-                                   new SqlParameter("good_name", Types.NVARCHAR),
-                                   new SqlParameter("get_data_order", Types.DATE),
-                                   new SqlParameter("get_delivery_date", Types.DATE));
-        SqlParameterSource in = new MapSqlParameterSource().addValue("customer_login", getOrder.getCustomerLogin())
-                                                          .addValue("good_name", getOrder.getGoodName())
-                                                          .addValue("get_data_order", getOrder.getOrderDate())
-                                                          .addValue("get_delivery_date", getOrder.getDeliveryDate());
-        String order = insertOrder.executeFunction(String.class, in);
-        return order;
+        try{
+            SimpleJdbcCall insertOrder = new SimpleJdbcCall(customerJdbcTemplate)
+                    .withSchemaName("ADMIN")
+                    .withCatalogName("user_package")
+                    .withFunctionName("add_order")
+                    .declareParameters(new SqlParameter("customer_login", Types.NVARCHAR),
+                            new SqlParameter("good_name", Types.NVARCHAR),
+                            new SqlParameter("get_data_order", Types.DATE),
+                            new SqlParameter("get_delivery_date", Types.DATE));
+            SqlParameterSource in = new MapSqlParameterSource().addValue("customer_login", getOrder.getCustomerLogin())
+                    .addValue("good_name", getOrder.getGoodName())
+                    .addValue("get_data_order", getOrder.getOrderDate())
+                    .addValue("get_delivery_date", getOrder.getDeliveryDate());
+            String order = insertOrder.executeFunction(String.class, in);
+            return order;
+        }catch(DataIntegrityViolationException dataNotFound){
+            throw new DataNotFoundException("Wrong good name or login");
+        }
     }
 
     public List getNotExecutedOrdersByLogin(String getLogin){

@@ -1,8 +1,10 @@
 package by.spring.promo.promoDB.repository;
 
+import by.spring.promo.promoDB.exception.DataNotFoundException;
 import by.spring.promo.promoDB.rowmapper.ReviewMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlOutParameter;
 import org.springframework.jdbc.core.SqlParameter;
@@ -41,15 +43,30 @@ public class StaffRepository {
 
     @Transactional
     @ExceptionHandler
-    public void updateOrderStatus(String orderId, String status){
+    public void updateOrderStatus(String orderName, String status){
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(staffJdbcTemplate)
                 .withSchemaName("ADMIN")
                 .withCatalogName("staff_package")
-                .declareParameters(new SqlParameter("order_id", Types.NVARCHAR),
+                .declareParameters(new SqlParameter("order_name", Types.NVARCHAR),
                         new SqlParameter("get_status", Types.NVARCHAR))
-                .withProcedureName("change_order_status_by_id");
-        SqlParameterSource in = new MapSqlParameterSource().addValue("order_id", orderId)
+                .withProcedureName("change_order_status_by_name");
+        SqlParameterSource in = new MapSqlParameterSource().addValue("order_name", orderName)
                 .addValue("get_status", status);
         simpleJdbcCall.execute(in);
+    }
+
+    public List getOrdersByStaffLogin(String staffLogin) {
+        try {
+            SimpleJdbcCall getOrdersByStaffLogin = new SimpleJdbcCall(staffJdbcTemplate)
+                    .withSchemaName("ADMIN")
+                    .withCatalogName("staff_package")
+                    .declareParameters(new SqlParameter("staff_login", Types.NVARCHAR))
+                    .withFunctionName("get_processed_order_to_staff_by_login");
+            SqlParameterSource in = new MapSqlParameterSource().addValue("staff_login", staffLogin);
+            List processedOrdersToStaff = getOrdersByStaffLogin.executeFunction(List.class, in);
+            return processedOrdersToStaff;
+        } catch (DataIntegrityViolationException notFoundExceptioin) {
+            throw new DataNotFoundException("No orders found for staff with login: " + staffLogin);
+        }
     }
 }
