@@ -7,7 +7,6 @@ import Authorisation from "./pages/AuthRegMain/Authorisation";
 import AdminMain from "./pages/Admin/AdminMain";
 import AdminGoodsPage from "./pages/Admin/AdminGoodsPage";
 import AdminOrders from "./pages/Admin/AdminOrders";
-import AdminStaff from "./pages/Admin/AdminStaff";
 import Navbar from "./components/Navbar";
 import Main from "./pages/AuthRegMain/Main";
 import CustomerMain from "./pages/Customer/CustomerMain";
@@ -16,9 +15,13 @@ import CustomerHistory from "./pages/Customer/CustomerHistory";
 import CustomerOrders from "./pages/Customer/CustomerOrders";
 import CustomerReview from "./pages/Customer/CustomerReview";
 import StaffMain from "./pages/Staff/StaffMain";
-import StaffReviews from "./pages/Staff/StaffReviews";
+import Reviews from "./pages/AuthRegMain/Reviews";
 import StaffOrders from "./pages/Staff/StaffOrders";
 import CustomerOrderForm from "./pages/Customer/CustomerOrderForm";
+import AddGoodForm from "./pages/Admin/AddGoodForm";
+import ChangeOrderForm from "./pages/Admin/ChangeOrderForm";
+import ChangeOrderFormSecondStep from "./pages/Admin/ChangeOrderFormSecondStep";
+import ConfirmUpdateOrder from "./pages/Admin/ConfirmUpdateOrder";
 
 function App() {
 
@@ -28,7 +31,7 @@ function App() {
             <Routes>
                 <Route path="/" element={<><Navbar default="Welcome on Delivery Service"/><Outlet/></>
                 }>
-                    <Route path="/" element={<Main/>} />
+                    <Route path="/" element={<Main/>}/>
                     <Route exac path={"/registration"} element={<Registration/>}/>
                     <Route path={"/authorization"} element={<Authorisation/>}/>
                 </Route>
@@ -37,22 +40,29 @@ function App() {
                     <Route path={"/admin/main"} element={<AdminMain/>}/>
                     <Route path={"/admin/main/orders"} element={<AdminOrders/>}/>
                     <Route path={"/admin/main/goods"} element={<AdminGoodsPage/>}/>
-                    <Route path={"/admin/main/staff"} element={<AdminStaff/>}/>
+                    <Route path={"/admin/main/goods/good"} element={<AddGoodForm/>}/>
+                    <Route path={"/admin/main/orders/:order/:address"} element={<ChangeOrderForm/>}/>
+                    <Route path={"/admin/main/reviews"} element={<Reviews/>}/>
+                    <Route path={"/admin/main/orders/secondstep/:order/:deliveryaddress/:customeraddress"}
+                           element={<ChangeOrderFormSecondStep/>}/>
+                    <Route path={"/admin/main/orders/confirm/:order/:address/:customeraddress/:executor"}
+                           element={<ConfirmUpdateOrder/>}/>
                 </Route>
 
                 <Route path={"/customer/main"} element={<><Navbar customer="true"/><Outlet/></>}>
-                        <Route path={"/customer/main"} element={<CustomerMain/>}/>
-                        <Route path={"/customer/main/goods"} element={<CustomerGoods/>}/>
-                        <Route path={"/customer/main/history"} element={<CustomerHistory/>}/>
-                        <Route path={"/customer/main/orders"} element={<CustomerOrders/>}/>
-                        <Route path={"/customer/main/review"} element={<CustomerReview/>}/>
-                        <Route path={"/customer/main/orders/order"} render={(props) => <CustomerOrderForm {...props}/>}/>
+                    <Route path={"/customer/main"} element={<CustomerMain/>}/>
+                    <Route path={"/customer/main/goods"} element={<CustomerGoods/>}/>
+                    <Route path={"/customer/main/history"} element={<CustomerHistory/>}/>
+                    <Route path={"/customer/main/orders"} element={<CustomerOrders/>}/>
+                    <Route path={"/customer/main/review"} element={<CustomerReview/>}/>
+                    <Route path={"/customer/main/reviews"} element={<Reviews/>}/>
+                    <Route path={"/customer/main/orders/order/:name/:price"} element={<CustomerOrderForm/>}/>
                 </Route>
 
                 <Route path={"/staff/main"} element={<><Navbar staff="true"/><Outlet/></>}>
+                    <Route path={"/staff/main/reviews"} element={<Reviews/>}/>
                     <Route path={"/staff/main"} element={<StaffMain/>}/>
                     <Route path={"/staff/main/orders"} element={<StaffOrders/>}/>
-                    <Route path={"/staff/main/reviews"} element={<StaffReviews/>}/>
                 </Route>
 
                 <Route

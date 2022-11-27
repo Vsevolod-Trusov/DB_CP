@@ -33,14 +33,22 @@ export default function Authorisation() {
                 }
                 throw new Error(`${response.status}: ${response.text()}`)
             }).then(data => {
-                window.localStorage.setItem("login", `${data.login}`)
-                window.localStorage.setItem("role", `${data.role}`)
-                if (data.role === 'user')
+
+                if (data.role === 'user') {
+                    window.localStorage.setItem("customer_login", `${data.login}`)
+                    window.localStorage.setItem("customer_role", `${data.role}`)
                     navigate("/customer/main")
-                else if (data.role === 'admin')
-                    navigate("/admin/main")
-                else if (data.role === 'staff')
+                }
+                else if (data.role === 'admin'){
+                    window.localStorage.setItem("admin_login", `${data.login}`)
+                    window.localStorage.setItem("admin_role", `${data.role}`)
+                    navigate(`/admin/main`)
+                }
+                else if (data.role === 'staff') {
+                    window.localStorage.setItem("staff_login", `${data.login}`)
+                    window.localStorage.setItem("staff_role", `${data.role}`)
                     navigate("/staff/main")
+                }
             }).catch(error => {
                 alert(error);
             })

@@ -9,7 +9,7 @@ export default function CustomerOrders() {
     }, []);
 
     const loadOrders = async () => {
-        await fetch(`http://localhost:8080/api/user/orders/${window.localStorage.getItem("login")}`, {
+        await fetch(`http://localhost:8080/api/user/orders/${window.localStorage.getItem("customer_login")}`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json'

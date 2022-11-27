@@ -1,8 +1,28 @@
 import React from "react";
-import {Link} from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import LogoImg from "../images/appIcon.ico";
 
 export default function Navbar(props) {
+    const {login} = useParams()
+    const navigate = useNavigate()
+    const customerExit = ()=>{
+        localStorage.removeItem("customer_login");
+        localStorage.removeItem("customer_role");
+        navigate("/authorisation");
+    }
+
+    const staffExit = ()=>{
+        localStorage.removeItem("staff_login");
+        localStorage.removeItem("staff_role");
+        navigate("/authorisation");
+    }
+
+    const adminExit = ()=>{
+        localStorage.removeItem("admin_login");
+        localStorage.removeItem("admin_role");
+        navigate("/authorisation");
+    }
+
     return (<div>
         <nav className="navbar navbar-expand-lg navbar-dark" style={{background: "#c402b4"}}>
             <div className="container-fluid">
@@ -12,7 +32,8 @@ export default function Navbar(props) {
                     </>
 
                     : props.admin ? <>
-                        <div className="container-fluid text-white">
+                        <div className="text-white p-md-1">{window.localStorage.getItem("admin_login")}</div>
+                        <div className="container-fluid text-white" style={{paddingRight: "40px"}}>
                             <Link className="btn btn-outline-light m-lg-1" to="/admin/main">
                                 Home
                             </Link>
@@ -22,15 +43,16 @@ export default function Navbar(props) {
                             <Link className="btn btn-outline-light m-lg-1" to="/admin/main/goods">
                                 Goods
                             </Link>
-                            <Link className="btn btn-outline-light m-lg-1" to="/admin/main/staff">
-                                Staff
+                            <Link className="btn btn-outline-light m-lg-1" to="/admin/main/reviews">
+                                Show
                             </Link>
                         </div>
-                        <Link className="btn btn-outline-light justify-content-end" to="/authorisation">
+                        <button className="btn btn-outline-light justify-content-end" onClick={()=>adminExit()}>
                             Exit
-                        </Link>
+                        </button>
                     </> : props.customer ? <>
-                        <div className="container-fluid text-white">
+                        <div className="text-white p-md-1">{window.localStorage.getItem("customer_login")}</div>
+                        <div className="container-fluid text-white" style={{paddingRight: "40px"}}>
                             <Link className="btn btn-outline-light m-lg-1" to="/customer/main">
                                 Home
                             </Link>
@@ -46,12 +68,16 @@ export default function Navbar(props) {
                             <Link className="btn btn-outline-light m-lg-1" to="/customer/main/review">
                                 Review
                             </Link>
+                            <Link className="btn btn-outline-light m-lg-1" to="/customer/main/reviews">
+                                Show
+                            </Link>
                         </div>
-                        <Link className="btn btn-outline-light justify-content-end" to="/authorisation">
+                        <button className="btn btn-outline-light justify-content-end" onClick={()=>customerExit()}>
                             Exit
-                        </Link>
+                        </button>
                     </> : props.staff ? <>
-                        <div className="container-fluid text-white">
+                        <div className="text-white p-md-1">{window.localStorage.getItem("staff_login")}</div>
+                        <div className="container-fluid text-white" style={{paddingRight: "40px"}}>
                             <Link className="btn btn-outline-light m-lg-1" to="/staff/main">
                                 Home
                             </Link>
@@ -59,12 +85,13 @@ export default function Navbar(props) {
                                 Orders
                             </Link>
                             <Link className="btn btn-outline-light m-lg-1" to="/staff/main/reviews">
-                                Reviews
+                                Show
                             </Link>
+
                         </div>
-                        <Link className="btn btn-outline-light justify-content-end" to="/authorisation">
+                        <button className="btn btn-outline-light justify-content-end" onClick={()=>staffExit()}>
                             Exit
-                        </Link>
+                        </button>
                     </> : <> <Link className="navbar-brand" to="/"/></>}
             </div>
         </nav>

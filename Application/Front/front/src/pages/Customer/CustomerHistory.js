@@ -9,7 +9,7 @@ export default function CustomerHistory() {
     }, []);
 
     const loadHistory = async () => {
-        await fetch(`http://localhost:8080/api/user/history/${window.localStorage.getItem("login")}`, {
+        await fetch(`http://localhost:8080/api/user/history/${window.localStorage.getItem("customer_login")}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json'

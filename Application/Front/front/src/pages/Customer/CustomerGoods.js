@@ -55,10 +55,9 @@ export default function CustomerGoods() {
                             <td className="text-center">
                                 <Link className="btn btn-outline-success mr-2"
                                       to={{
-                                    pathname: "/customer/main/orders/order",
-                                    state:{good}
+                                    pathname: `/customer/main/orders/order/${good.name}/${good.price}`,
                                 }}>
-                                    BUY
+                                    Buy
                                 </Link>
                             </td>
                         </tr>

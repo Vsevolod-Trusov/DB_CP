@@ -3,7 +3,6 @@ import {Navigate, Outlet, Route, Routes} from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import AdminGoodsPage from "./AdminGoodsPage";
 import AdminOrders from "./AdminOrders";
-import AdminStaff from "./AdminStaff";
 
 export default function AdminMain() {
     return (
