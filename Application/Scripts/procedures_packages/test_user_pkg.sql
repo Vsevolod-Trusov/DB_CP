@@ -1,3 +1,11 @@
+--test getting distance
+declare
+    distance number;
+begin
+    --distance := user_package.get_distance_between_deliverypoint_customer('Ленина 20', 'Беларуская 21');
+    distance := user_package.get_distance_between_deliverypoint_customer('asdfgh', 'Беларуская 21');
+    dbms_output.put_line(distance);
+end;
 --test add order
 declare
     good_name goods.name%type;
@@ -9,7 +17,7 @@ dbms_output.put_line(user_package.add_order(
     'user',
     good_name,
     '21.11.2022', '22.11.2022'));
-end;--todo: протестировать
+end;
 declare
     history sys_refcursor;
     good_name goods.name%type;
