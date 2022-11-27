@@ -15,6 +15,9 @@ public class OrderRowMapper implements RowMapper<Order> {
         order.setDeliveryDate(rs.getDate("DELIVERY_DATE"));
         order.setUserAddress(rs.getString("user_point"));
         order.setDeliveryAddress(rs.getString("delivery_point"));
+        order.setPrice(rs.getBigDecimal("order_price"));
+        order.setStatus(rs.getString("order_status"));
+        order.setDeliveryType(rs.getString("delivery_type"));
         return order;
     }
 }

@@ -91,11 +91,15 @@ public class CustomerRepository {
                     .declareParameters(new SqlParameter("customer_login", Types.NVARCHAR),
                             new SqlParameter("good_name", Types.NVARCHAR),
                             new SqlParameter("get_data_order", Types.DATE),
-                            new SqlParameter("get_delivery_date", Types.DATE));
+                            new SqlParameter("get_delivery_date", Types.DATE),
+                            new SqlParameter("get_delivery_type", Types.NVARCHAR),
+                            new SqlParameter("get_order_price", Types.DECIMAL));
             SqlParameterSource in = new MapSqlParameterSource().addValue("customer_login", getOrder.getCustomerLogin())
                     .addValue("good_name", getOrder.getGoodName())
                     .addValue("get_data_order", getOrder.getOrderDate())
-                    .addValue("get_delivery_date", getOrder.getDeliveryDate());
+                    .addValue("get_delivery_date", getOrder.getDeliveryDate())
+                    .addValue("get_delivery_type", getOrder.getDeliveryType())
+                    .addValue("get_order_price", getOrder.getPrice());
             String order = insertOrder.executeFunction(String.class, in);
             return order;
         }catch(DataIntegrityViolationException dataNotFound){

@@ -3,6 +3,7 @@ package by.spring.promo.promoDB.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Getter
@@ -16,4 +17,7 @@ public class Order {
     private Date deliveryDate;
     private String userAddress;
     private String deliveryAddress;
+    private String deliveryType;
+    private BigDecimal price;
+    private String status;
 }

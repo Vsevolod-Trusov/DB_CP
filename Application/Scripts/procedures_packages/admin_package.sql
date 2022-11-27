@@ -261,6 +261,9 @@ create or replace package body admin_package is
         open unprocessed_orders_cursor for select o1.ordername          as order_name,
                                                   o1.orderdate          as order_date,
                                                   o1.deliverydate       as delivery_date,
+                                                  o1.status       as order_status,
+                                                  o1.price       as order_price,
+                                                  o1.DELIVERYTYPE       as delivery_type,
                                                   g.name                as good_name,
                                                   userlogin.login       as executor_login,
 

@@ -4,7 +4,9 @@ create or replace package user_package as
                                                          customer_location_name POINTS.POINT_NAME%type) return number;
     --add order
     function add_order(customer_login userlogin.login%type, good_name goods.name%type,
-                       get_data_order date default sysdate, get_delivery_date date) return orders.ordername%type;
+                       get_data_order date default sysdate, get_delivery_date date,
+                       get_delivery_type orders.deliverytype%type,
+                       get_order_price orders.price%type) return orders.ordername%type;
     --get orders by login
     function get_orders_not_executed_by_login(user_login userlogin.login%type) return sys_refcursor;
     --add history
@@ -51,7 +53,9 @@ create or replace package body user_package as
 
     --add order
     function add_order(customer_login userlogin.login%type, good_name goods.name%type,
-                       get_data_order date default sysdate, get_delivery_date date) return orders.ordername%type
+                       get_data_order date default sysdate, get_delivery_date date,
+                       get_delivery_type orders.deliverytype%type,
+                       get_order_price orders.price%type) return orders.ordername%type
         is
         customer_profile_id    userprofile.id%type;
         executor_profile_id    userprofile.id%type;
@@ -83,28 +87,37 @@ create or replace package body user_package as
 
         select points.id into start_deliverylocation from points where points.type = 'staff' fetch first 1 rows only;
 
-        insert into orders (customerprofileid, excecutorprofileid, deliverylocationid, status, userlocationid,
-                            orderdate, deliverydate)
+        if get_delivery_type = 'courier' then
+            insert into orders (customerprofileid, excecutorprofileid, deliverylocationid, status, userlocationid,
+                            orderdate, deliverydate, deliverytype)
         values (customer_profile_id, executor_profile_id, start_deliverylocation, unprocessed_status, userlocation_id,
-                get_data_order, get_delivery_date)
+                get_data_order, get_delivery_date, get_delivery_type)
         returning id into order_id;
-        commit;
+            else
+            insert into orders (customerprofileid, excecutorprofileid, deliverylocationid, status, userlocationid,
+                            orderdate, deliverydate, deliverytype, price)
+        values (customer_profile_id, executor_profile_id, start_deliverylocation, unprocessed_status, userlocation_id,
+                get_data_order, get_delivery_date, get_delivery_type, get_order_price)
+        returning id into order_id;
+        end if;
 
         order_name := 'order_' || order_id;
         update orders set ORDERNAME= order_name where orders.id = order_id;-- into orders(ordername) values (order_name);
         commit;
 
         select goods.id into good_id from goods where goods.name = good_name;
-        DBMS_OUTPUT.PUT_LINE(customer_profile_id);
         user_package.add_history(order_id, customer_login, order_name, unprocessed_status);
         admin_package.add_goods_to_order(order_id, good_id);
         return order_name;
     exception
         when no_such_profile_exception then
+            rollback;
             raise no_such_profile_exception;
         when others then
+            rollback;
             raise other_exception;
     end add_order;
+
 
     --get orders by login
     function get_orders_not_executed_by_login(user_login userlogin.login%type) return sys_refcursor
@@ -114,6 +127,9 @@ create or replace package body user_package as
         open orders_cursor for select o1.ordername          as order_name,
                                       o1.orderdate          as order_date,
                                       o1.deliverydate       as delivery_date,
+                                      o1.status       as order_status,
+                                      o1.price       as order_price,
+                                      o1.DELIVERYTYPE       as delivery_type,
                                       goods.name            as good_name,
                                       userlogin.login       as customer_login,
                                       (select userlogin.login
