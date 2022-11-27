@@ -10,6 +10,7 @@ public class RouteRowMapper implements RowMapper<Route> {
         Route route = new Route();
         route.setDeliveryPointName(rs.getString("delivery_point"));
         route.setDistance(rs.getBigDecimal("distance"));
+        route.setStaffCount(rs.getInt("staff_count"));
         return route;
     }
 }

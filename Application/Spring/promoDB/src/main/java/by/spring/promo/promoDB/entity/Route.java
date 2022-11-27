@@ -11,4 +11,5 @@ public class Route {
     private String deliveryPointName;
     private String customerPointname;
     private BigDecimal distance;
+    private int staffCount;
 }

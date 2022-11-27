@@ -1,6 +1,7 @@
 package by.spring.promo.promoDB.repository;
 
 import by.spring.promo.promoDB.exception.DataNotFoundException;
+import by.spring.promo.promoDB.rowmapper.OrderRowMapper;
 import by.spring.promo.promoDB.rowmapper.ReviewMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -61,7 +62,8 @@ public class StaffRepository {
                     .withSchemaName("ADMIN")
                     .withCatalogName("staff_package")
                     .declareParameters(new SqlParameter("staff_login", Types.NVARCHAR))
-                    .withFunctionName("get_processed_order_to_staff_by_login");
+                    .withFunctionName("get_processed_order_to_staff_by_login")
+                    .returningResultSet("orders", new OrderRowMapper());
             SqlParameterSource in = new MapSqlParameterSource().addValue("staff_login", staffLogin);
             List processedOrdersToStaff = getOrdersByStaffLogin.executeFunction(List.class, in);
             return processedOrdersToStaff;

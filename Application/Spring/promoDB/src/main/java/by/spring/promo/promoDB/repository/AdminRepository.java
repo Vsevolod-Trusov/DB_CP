@@ -14,7 +14,9 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.math.BigDecimal;
 import java.sql.Types;
 import java.util.List;
 
@@ -145,5 +147,51 @@ public class AdminRepository {
 
         List points =  simpleJdbcCall.executeFunction(List.class);
         return points;
+    }
+
+    public void addGood(String getName, String getDescription, BigDecimal getPrice) {
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .declareParameters(new SqlParameter("good_name", Types.NVARCHAR),
+                        new SqlParameter("good_description", Types.NVARCHAR),
+                        new SqlParameter("good_price", Types.NUMERIC))
+                .withProcedureName("add_good");
+
+        SqlParameterSource in = new MapSqlParameterSource()
+                .addValue("good_name", getName)
+                .addValue("good_description", getDescription)
+                .addValue("good_price", getPrice);
+
+       simpleJdbcCall.execute(in);
+    }
+
+    @ExceptionHandler
+    public void deleteGoodByName(String getName) {
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .declareParameters(new SqlParameter("good_name", Types.NVARCHAR))
+                .withProcedureName("delete_good_by_name");
+
+        SqlParameterSource in = new MapSqlParameterSource()
+                .addValue("good_name", getName);
+
+        simpleJdbcCall.execute(in);
+    }
+
+    public List getStaffByDeliveryPointName(String deliveryPointName) {
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .declareParameters(new SqlParameter("get_point_name", Types.NVARCHAR))
+                .withFunctionName("get_executors_by_point_name")
+                .returningResultSet("staff", new StaffRowMapper());
+
+        SqlParameterSource in = new MapSqlParameterSource()
+                .addValue("get_point_name", deliveryPointName);
+
+        List staff =  simpleJdbcCall.executeFunction(List.class, in);
+        return staff;
     }
 }
