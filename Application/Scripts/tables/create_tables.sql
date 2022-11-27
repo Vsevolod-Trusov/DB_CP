@@ -7,7 +7,7 @@ drop table Reviews;
 
 drop table Orders;
 drop table GoodsToOrder;
-drop table Links;
+--drop table Links; droped
 drop table History;
 drop table Points;
 ---drop tables---
@@ -89,6 +89,9 @@ CREATE TABLE Orders(
     DELIVERYLOCATIONID RAW(32) default SYS_GUID() null,
     ORDERDATE DATE,
     DELIVERYDATE DATE,
+    DeliveryType NVARCHAR2(10),
+    Price NUMBER(5,2),
+    CONSTRAINT CHECK_ORDERS_DeliveryType CHECK(DeliveryType like 'courier' OR DeliveryType like 'pickup'),
     CONSTRAINT PK_ORDERS_ID primary key(ID),
     CONSTRAINT FK_ORDERS_CUSTOMERPROFILEID foreign key (CUSTOMERPROFILEID) references UserProfile(ID),
     CONSTRAINT FK_ORDERS_EXCECUTORPROFILEID foreign key (EXCECUTORPROFILEID) references UserProfile(ID),
