@@ -116,7 +116,6 @@ create or replace package body user_package as
         userlocation_id        points.id%type;
         order_name             orders.ordername%type := 'order';
         no_such_profile_exception exception;
-        other_exception exception;
         pragma exception_init (no_such_profile_exception, 100);
     begin
         select userprofile.id
@@ -168,7 +167,7 @@ create or replace package body user_package as
             raise no_such_profile_exception;
         when others then
             rollback;
-            raise other_exception;
+            raise_application_error(-20001, sqlerrm);
     end add_order;
 
 
@@ -297,8 +296,6 @@ create or replace package body user_package as
                          get_login userlogin.login%type)
         is
         userprofile_id userprofile.id%type;
-
-        other_exception exception;
     begin
         select userprofile.id
         into userprofile_id
@@ -312,9 +309,11 @@ create or replace package body user_package as
         commit;
     exception
         when no_data_found then
+            rollback;
             raise no_data_found;
-        when others then
-            raise other_exception;
+         when others then
+             rollback;
+            raise_application_error(-20001, sqlerrm);
     end add_review;
 end user_package;
 

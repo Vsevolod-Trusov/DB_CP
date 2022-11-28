@@ -170,7 +170,7 @@ create or replace package body admin_package is
         when no_such_profile_exception then
             raise no_such_profile_exception;
         when others then
-            raise_application_error(-2000, sqlerrm);
+            raise_application_error(-20001, sqlerrm);
     end authorisation;
 
 
@@ -268,6 +268,7 @@ create or replace package body admin_package is
         commit;
     exception
         when no_data_found then raise no_data_found;
+        when others then raise_application_error(-20001, sqlerrm);
     end update_order_executor_deliverypoint;
 
     ------------support functions-----------------
