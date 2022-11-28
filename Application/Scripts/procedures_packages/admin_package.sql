@@ -144,7 +144,7 @@ create or replace package body admin_package is
         commit;
     exception
         when no_data_found then rollback; raise no_data_found;
-        when others then rollback; raise_application_error(sqlcode, sqlerrm);
+        when others then rollback; raise_application_error(-20001, sqlerrm);
     end register_user;
 
     --authorisation accaunt
