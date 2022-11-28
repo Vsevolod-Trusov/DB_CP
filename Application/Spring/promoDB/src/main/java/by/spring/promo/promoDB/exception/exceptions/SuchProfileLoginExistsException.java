@@ -1,11 +1,10 @@
-package by.spring.promo.promoDB.exception;
+package by.spring.promo.promoDB.exception.exceptions;
 
-import org.springframework.dao.DataIntegrityViolationException;
 
 import java.sql.SQLException;
 
-public class DataNotFoundException extends DataIntegrityViolationException {
-    public DataNotFoundException(String message){
+public class SuchProfileLoginExistsException extends SQLException {
+    public SuchProfileLoginExistsException(String message){
         super(message);
     }
 }

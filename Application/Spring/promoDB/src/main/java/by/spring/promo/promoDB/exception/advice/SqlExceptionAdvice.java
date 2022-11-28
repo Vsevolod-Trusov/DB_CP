@@ -7,14 +7,15 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 @ControllerAdvice
 public class SqlExceptionAdvice{
     @ResponseBody
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String,String>> exceptionHandler(RuntimeException exception) {
+    @ExceptionHandler(SQLException.class)
+    public ResponseEntity<Map<String,String>> exceptionHandler(SQLException exception) {
         Map<String,String> errorMap = new HashMap<>();
         errorMap.put("message", exception.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorMap);

@@ -4,6 +4,7 @@ import by.spring.promo.promoDB.entity.Authorization;
 import by.spring.promo.promoDB.entity.Good;
 import by.spring.promo.promoDB.entity.Order;
 import by.spring.promo.promoDB.entity.UserLogin;
+import by.spring.promo.promoDB.exception.exceptions.SuchProfileLoginExistsException;
 import by.spring.promo.promoDB.repository.AdminRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class AdminService {
     }
     @Transactional
     public void registerUserNote(String getLogin, String getPassword, String getRole, String getEmail,
-                                 String getPointName){
+                                 String getPointName) throws SuchProfileLoginExistsException {
          adminRepository.register(getLogin, getPassword, getRole, getEmail, getPointName);
     }
 

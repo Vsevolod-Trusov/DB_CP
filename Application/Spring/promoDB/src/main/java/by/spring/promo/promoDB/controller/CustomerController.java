@@ -2,6 +2,7 @@ package by.spring.promo.promoDB.controller;
 
 import by.spring.promo.promoDB.entity.*;
 import by.spring.promo.promoDB.exception.DataNotFoundException;
+import by.spring.promo.promoDB.exception.exceptions.SuchProfileLoginExistsException;
 import by.spring.promo.promoDB.service.AdminService;
 import by.spring.promo.promoDB.service.CustomerService;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.getRoutesByUserLogin(userLogin));
     }
     @PostMapping("/registration")
-    public ResponseEntity<String> registration(@RequestBody UserLogin userLogin) {
+    public ResponseEntity<String> registration(@RequestBody UserLogin userLogin) throws SuchProfileLoginExistsException {
         adminService.registerUserNote(userLogin.getLogin(), userLogin.getPassword(),
                 userLogin.getRole(), userLogin.getEmail(), userLogin.getPointName());
         return ResponseEntity.ok("User "+ userLogin.getLogin()+" registered");

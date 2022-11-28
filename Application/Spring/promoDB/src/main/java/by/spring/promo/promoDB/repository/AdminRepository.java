@@ -4,6 +4,7 @@ import by.spring.promo.promoDB.entity.Authorization;
 import by.spring.promo.promoDB.entity.Order;
 import by.spring.promo.promoDB.entity.UserLogin;
 import by.spring.promo.promoDB.exception.DataNotFoundException;
+import by.spring.promo.promoDB.exception.exceptions.SuchProfileLoginExistsException;
 import by.spring.promo.promoDB.rowmapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
@@ -45,25 +47,29 @@ public class AdminRepository {
 
     @Transactional
     public void register(String getLogin, String getPassword, String getRole, String getEmail,
-                         String getPointName) {
-        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                .withSchemaName("ADMIN")
-                .withCatalogName("admin_package")
-                .declareParameters(new SqlParameter("get_login", Types.NVARCHAR),
-                    new SqlParameter("get_userpoint_name", Types.NVARCHAR),
-                    new SqlParameter("password", Types.NVARCHAR),
-                    new SqlParameter("get_role", Types.NVARCHAR),
-                    new SqlParameter("get_email", Types.NVARCHAR))
-                .withProcedureName("register_user");
+                         String getPointName) throws SuchProfileLoginExistsException {
+       try{
+           SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                   .withSchemaName("ADMIN")
+                   .withCatalogName("admin_package")
+                   .declareParameters(new SqlParameter("get_login", Types.NVARCHAR),
+                           new SqlParameter("get_userpoint_name", Types.NVARCHAR),
+                           new SqlParameter("password", Types.NVARCHAR),
+                           new SqlParameter("get_role", Types.NVARCHAR),
+                           new SqlParameter("get_email", Types.NVARCHAR))
+                   .withProcedureName("register_user");
 
-        SqlParameterSource in = new MapSqlParameterSource()
-                .addValue("get_login", getLogin)
-                .addValue("get_userpoint_name", getPointName)
-                .addValue("password", getPassword)
-                .addValue("get_role", getRole)
-                .addValue("get_email", getEmail);
+           SqlParameterSource in = new MapSqlParameterSource()
+                   .addValue("get_login", getLogin)
+                   .addValue("get_userpoint_name", getPointName)
+                   .addValue("password", getPassword)
+                   .addValue("get_role", getRole)
+                   .addValue("get_email", getEmail);
 
-            simpleJdbcCall.execute(in);
+           simpleJdbcCall.execute(in);
+       }catch(Exception exception){
+           throw new SuchProfileLoginExistsException("Such login "+getLogin+" already exists");
+       }
     }
 
     @Transactional

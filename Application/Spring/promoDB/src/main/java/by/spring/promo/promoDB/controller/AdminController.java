@@ -4,6 +4,7 @@ import by.spring.promo.promoDB.entity.Authorization;
 import by.spring.promo.promoDB.entity.Good;
 import by.spring.promo.promoDB.entity.Order;
 import by.spring.promo.promoDB.entity.UserLogin;
+import by.spring.promo.promoDB.exception.exceptions.SuchProfileLoginExistsException;
 import by.spring.promo.promoDB.service.AdminService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -51,7 +52,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getAllPoitNames());
     }
     @PostMapping("/registration")
-    public ResponseEntity<String> registration(@RequestBody UserLogin userLogin) {
+    public ResponseEntity<String> registration(@RequestBody UserLogin userLogin) throws SuchProfileLoginExistsException {
         adminService.registerUserNote(userLogin.getLogin(), userLogin.getPassword(),
                 userLogin.getRole(), userLogin.getEmail(), userLogin.getPointName());
         return ResponseEntity.ok("User "+ userLogin.getLogin()+" registered");
