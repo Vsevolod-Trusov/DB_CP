@@ -1,4 +1,8 @@
 create or replace package user_package as
+    --get routes by user login
+    function get_routes_by_user_login(user_login userlogin.login%type) return sys_refcursor;
+    --get analise abount customer poin and all delivery points
+    function get_route_length_analysis(customer_point_name points.point_name%type) return sys_refcursor;
     --get_distance_line
     function get_distance_between_deliverypoint_customer(delivery_point_name POINTS.POINT_NAME%type,
                                                          customer_location_name POINTS.POINT_NAME%type) return number;
@@ -6,7 +10,7 @@ create or replace package user_package as
     function add_order(customer_login userlogin.login%type, good_name goods.name%type,
                        get_data_order date default sysdate, get_delivery_date date,
                        get_delivery_type orders.deliverytype%type,
-                       get_order_price orders.price%type) return orders.ordername%type;
+                       get_order_price orders.price%type, get_delivery_point_pickup points.point_name%type) return orders.ordername%type;
     --get orders by login
     function get_orders_not_executed_by_login(user_login userlogin.login%type) return sys_refcursor;
     --add history
@@ -32,21 +36,66 @@ create or replace package user_package as
 end user_package;
 
 create or replace package body user_package as
+    --get routes by user login
+    function get_routes_by_user_login(user_login userlogin.login%type) return sys_refcursor
+        is
+        routes_by_login sys_refcursor;
+            point_name points.point_name%type;
+            begin
+                select points.point_name into point_name from points join userprofile on userprofile.USERPOINTID = points.id
+                join userlogin on userlogin.id = userprofile.userloginid where userlogin.login = user_login;
+
+                routes_by_login := user_package.get_route_length_analysis(point_name);
+                return routes_by_login;
+                exception when no_data_found then
+                raise no_data_found;
+                when others then raise_application_error(-20000, 'Error in get_routes_by_user_login');
+                end;
+        --get analysis
+    function get_route_length_analysis(customer_point_name points.point_name%type) return sys_refcursor
+        is
+        analysys_route_length_cursor sys_refcursor;
+    begin
+        open analysys_route_length_cursor for select p2.point_name as delivery_point,
+                                                      get_distance_between_deliverypoint_customer(p2.point_name,
+                                                                                                 customer_point_name) as distance,
+                                                    count(*) as staff_count
+                                              from userprofile
+                                                               join points p1
+                                                                    on userprofile.USERPOINTID = p1.id
+                                                               join userlogin on
+                                                          userprofile.USERLOGINID = userlogin.id
+                                                   join points p2 on p2.id = userprofile.USERPOINTID
+                                              where  p2.type = 'staff'
+                                                      and userlogin.role= 'staff'
+                                                and userlogin.login != 'executor'
+                                              group by p2.point_name, customer_point_name;
+        return analysys_route_length_cursor;
+    end;
+
     --get_distance_line
     function get_distance_between_deliverypoint_customer(delivery_point_name POINTS.POINT_NAME%type,
                                                          customer_location_name POINTS.POINT_NAME%type) return number
         is
-        distance number;
+        distance       number;
         delivery_point points.location%type;
         customer_point points.location%type;
     begin
-        select location into delivery_point from points where points.type = 'staff' and rtrim(POINT_NAME) = rtrim(delivery_point_name);
-        select location into customer_point from points where points.type = 'user' and rtrim(POINT_NAME) = rtrim(customer_location_name);
+        select location
+        into delivery_point
+        from points
+        where points.type = 'staff'
+          and rtrim(POINT_NAME) = rtrim(delivery_point_name);
+        select location
+        into customer_point
+        from points
+        where points.type = 'user'
+          and rtrim(POINT_NAME) = rtrim(customer_location_name);
 
         select sdo_geom.sdo_distance(delivery_point, customer_point, 0.01, 'unit=km') into distance from dual;
         return distance;
-
-        exception when no_data_found then raise no_data_found;
+    exception
+        when no_data_found then raise no_data_found;
         when others then raise_application_error(sqlcode, sqlerrm);
         return -1;
     end get_distance_between_deliverypoint_customer;
@@ -55,7 +104,8 @@ create or replace package body user_package as
     function add_order(customer_login userlogin.login%type, good_name goods.name%type,
                        get_data_order date default sysdate, get_delivery_date date,
                        get_delivery_type orders.deliverytype%type,
-                       get_order_price orders.price%type) return orders.ordername%type
+                       get_order_price orders.price%type,
+                       get_delivery_point_pickup points.point_name%type) return orders.ordername%type
         is
         customer_profile_id    userprofile.id%type;
         executor_profile_id    userprofile.id%type;
@@ -85,16 +135,19 @@ create or replace package body user_package as
 
         select userprofile.userpointid into userlocation_id from userprofile where userprofile.id = customer_profile_id;
 
-        select points.id into start_deliverylocation from points where points.type = 'staff' fetch first 1 rows only;
+
 
         if get_delivery_type = 'courier' then
+            select points.id into start_deliverylocation from points where points.type = 'staff' fetch first 1 rows only;
             insert into orders (customerprofileid, excecutorprofileid, deliverylocationid, status, userlocationid,
-                            orderdate, deliverydate, deliverytype)
+                            orderdate, deliverydate, deliverytype, price)
         values (customer_profile_id, executor_profile_id, start_deliverylocation, unprocessed_status, userlocation_id,
-                get_data_order, get_delivery_date, get_delivery_type)
+                get_data_order, get_delivery_date, get_delivery_type, get_order_price)
         returning id into order_id;
             else
-            insert into orders (customerprofileid, excecutorprofileid, deliverylocationid, status, userlocationid,
+                select points.id into start_deliverylocation from points where points.type = 'staff' and points.point_name = get_delivery_point_pickup;
+                unprocessed_status := 'processed';
+                insert into orders (customerprofileid, excecutorprofileid, deliverylocationid, status, userlocationid,
                             orderdate, deliverydate, deliverytype, price)
         values (customer_profile_id, executor_profile_id, start_deliverylocation, unprocessed_status, userlocation_id,
                 get_data_order, get_delivery_date, get_delivery_type, get_order_price)

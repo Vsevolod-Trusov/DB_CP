@@ -22,11 +22,6 @@ create or replace package admin_package is
     --authorisation accaunt
     function authorisation(get_login nvarchar2,
                            get_password nvarchar2) return sys_refcursor;
-    --get distance between two points
-    function get_distance_between_deliverypoint_customer(delivery_point_name POINTS.POINT_NAME%type,
-                                                         customer_location_name POINTS.POINT_NAME%type) return number;
-    --get analise abount customer poin and all delivery points
-    function get_route_length_analysis(customer_point_name points.point_name%type) return sys_refcursor;
     --add good
     procedure add_good(good_name goods.name%type,
                        good_description goods.description%type,
@@ -42,7 +37,7 @@ create or replace package admin_package is
     --change order executor and delivery location
     procedure update_order_executor_deliverypoint(order_name orders.ordername%type,
                                                   order_executor_login userlogin.login%type,
-                                                  deliverypoint_name points.point_name%type);
+                                                  deliverypoint_name points.point_name%type, get_order_price orders.price%type);
     ------------support functions-----------------
     function encrypt_password(password varchar2) return userlogin.password%type;
     function dencrypt_password(password_hash varchar2) return varchar2;
@@ -178,54 +173,8 @@ create or replace package body admin_package is
             raise_application_error(-2000, sqlerrm);
     end authorisation;
 
-    --get distance between two points
-    function get_distance_between_deliverypoint_customer(delivery_point_name POINTS.POINT_NAME%type,
-                                                         customer_location_name POINTS.POINT_NAME%type) return number
-        is
-        distance       number;
-        delivery_point points.location%type;
-        customer_point points.location%type;
-    begin
-        select location
-        into delivery_point
-        from points
-        where points.type = 'staff'
-          and rtrim(POINT_NAME) = rtrim(delivery_point_name);
-        select location
-        into customer_point
-        from points
-        where points.type = 'user'
-          and rtrim(POINT_NAME) = rtrim(customer_location_name);
 
-        select sdo_geom.sdo_distance(delivery_point, customer_point, 0.01, 'unit=km') into distance from dual;
-        return distance;
-    exception
-        when no_data_found then raise no_data_found;
-        when others then raise_application_error(sqlcode, sqlerrm);
-        return -1;
-    end get_distance_between_deliverypoint_customer;
 
-    --get analysis
-    function get_route_length_analysis(customer_point_name points.point_name%type) return sys_refcursor
-        is
-        analysys_route_length_cursor sys_refcursor;
-    begin
-        open analysys_route_length_cursor for select p2.point_name as delivery_point,
-                                                      get_distance_between_deliverypoint_customer(p2.point_name,
-                                                                                                 customer_point_name) as distance,
-                                                    count(*) as staff_count
-                                              from userprofile
-                                                               join points p1
-                                                                    on userprofile.USERPOINTID = p1.id
-                                                               join userlogin on
-                                                          userprofile.USERLOGINID = userlogin.id
-                                                   join points p2 on p2.id = userprofile.USERPOINTID
-                                              where  p2.type = 'staff'
-                                                      and userlogin.role= 'staff'
-                                                and userlogin.login != 'executor'
-                                              group by p2.point_name, customer_point_name;
-        return analysys_route_length_cursor;
-    end;
 
  /*(select count(*)
                                                       from userprofile
@@ -294,7 +243,8 @@ create or replace package body admin_package is
     end;
     procedure update_order_executor_deliverypoint(order_name orders.ordername%type,
                                                   order_executor_login userlogin.login%type,
-                                                  deliverypoint_name points.point_name%type)
+                                                  deliverypoint_name points.point_name%type,
+                                                  get_order_price orders.price%type)
         is
         order_executor_id orders.excecutorprofileid%type;
         deliverypoint_id  orders.DELIVERYLOCATIONID%type;
@@ -311,7 +261,8 @@ create or replace package body admin_package is
         update orders
         set Orders.Status= 'processed',
             ORDERS.EXCECUTORPROFILEID = order_executor_id,
-            orders.DELIVERYLOCATIONID = deliverypoint_id
+            orders.DELIVERYLOCATIONID = deliverypoint_id,
+            orders.price = get_order_price
         where orders.ordername = order_name;
         update history set history.status = 'processed' where history.ordername = order_name;
         commit;
