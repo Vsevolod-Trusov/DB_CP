@@ -1,15 +1,15 @@
 import React, {useEffect, useState} from "react";
-import {Link, useNavigate, useParams} from "react-router-dom";
+import {Link, useLocation, useNavigate, useParams} from "react-router-dom";
 
 export default function ChangeOrderForm() {
-    const {order, address} = useParams();
+    const location = useLocation();
     const [pointsList, setPointsList] = useState([]);
     let navigate = useNavigate()
     useEffect(() => {
         loadPoints()
     }, []);
     const loadPoints = () => {
-        fetch(`http://localhost:8080/api/admin/route/${address}`, {
+        fetch(`http://localhost:8080/api/admin/route/${location.state.userAddress}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json'
@@ -35,8 +35,20 @@ export default function ChangeOrderForm() {
             setPointsList([...pointsList.sort((a, b) => b.distance - a.distance)])
     }
 
-    const secondChangeStep = (deliveryAddress) =>{
-        navigate(`/admin/main/orders/secondstep/${order}/${deliveryAddress}/${address}`)
+    const secondChangeStep = (deliveryAddress, distance) =>{
+        let order = location.state
+        order.deliveryAddress = deliveryAddress
+        if (distance < 1 )
+            order.price += 0.1 * order.price
+        else if (distance < 2)
+            order.price += 0.3 * order.price
+        else if (distance < 5)
+            order.price += 0.5 * order.price
+        else
+            order.price += 1.1 * order.price
+
+        order.price += 0.1 * order.price
+        navigate(`/admin/main/orders/secondstep`, {state: order})
     }
 
     return (
@@ -69,7 +81,7 @@ export default function ChangeOrderForm() {
                             <td className="text-center">{point.deliveryPointName}</td>
                             <td className="text-center">{point.distance}</td>
                             <td className="text-center">
-                                <button className="btn btn-primary mr-2"  onClick={()=>secondChangeStep(point.deliveryPointName)}>Select staff</button>
+                                <button className="btn btn-primary mr-2"  onClick={()=>secondChangeStep(point.deliveryPointName, point.distance)}>Select staff</button>
                             </td>
                         </tr>
                     ))}

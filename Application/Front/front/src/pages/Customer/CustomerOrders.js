@@ -1,5 +1,4 @@
 import React, {useEffect} from "react";
-import {Navigate, Outlet, Route, Routes} from "react-router-dom";
 
 export default function CustomerOrders() {
     const [ordersList , setOrdersList] = React.useState([]);
@@ -49,6 +48,25 @@ export default function CustomerOrders() {
             })
     }
 
+    const onTook = async (orderName) =>{
+
+        console.log(orderName)
+        await fetch(`http://localhost:8080/api/staff/order/${orderName}`, {
+            method: 'GET'
+        })
+            .then(response => {
+
+                if (response.status === 200) {
+                    return response.text()
+                }
+                throw new Error(`${response.status}`)
+            }).then(data => {
+                loadOrders()
+                console.log(data)
+            }).catch(error => {
+                alert(error);
+            })
+    }
     return (
         <div className="container">
             Customer Goods table
@@ -61,6 +79,7 @@ export default function CustomerOrders() {
                         <th scope="col" className="text-center">Executor</th>
                         <th scope="col" className="text-center">Delivery Date</th>
                         <th scope="col" className="text-center">Order Date</th>
+                        <th scope="col" className="text-center">Price</th>
                         <th scope="col" className="text-center">Action</th>
                     </tr>
                     </thead>
@@ -69,12 +88,19 @@ export default function CustomerOrders() {
                         <tr key={index}>
                             <td className="text-center">{good.orderName}</td>
                             <td className="text-center">{good.goodName}</td>
-                            {good.executorLogin !== 'executor' ? <td className="text-center">{good.executorLogin}</td>
-                            : <td className="text-center"></td>}
+                            {good.executorLogin === 'executor'
+                                ? <td className="text-center">{good.deliveryType}</td>
+                                    : <td className="text-center">{good.executorLogin}</td>}
                             <td className="text-center">{good.deliveryDate}</td>
                             <td className="text-center">{good.orderDate}</td>
+                            <td className="text-center">{good.price === 0?"":good.price}</td>
                             <td className="text-center">
-                                <button className="btn btn-danger mr-2" onClick={()=>onDelete(good.orderName)}>Delete</button>
+                                <button className="btn btn-primary me-2"
+                                        onClick={() => onTook(good.orderName)}>Took
+                                </button>
+                                <button className="btn btn-danger"
+                                        onClick={() => onDelete(good.orderName)}>Delete
+                                </button>
                             </td>
                         </tr>
                     ))}

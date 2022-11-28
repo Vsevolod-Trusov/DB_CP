@@ -22,6 +22,8 @@ import AddGoodForm from "./pages/Admin/AddGoodForm";
 import ChangeOrderForm from "./pages/Admin/ChangeOrderForm";
 import ChangeOrderFormSecondStep from "./pages/Admin/ChangeOrderFormSecondStep";
 import ConfirmUpdateOrder from "./pages/Admin/ConfirmUpdateOrder";
+import CustomerSelectIssuePoint from "./pages/Customer/CustomerSelectIssuePoint";
+import CustomerConfirmOrder from "./pages/Customer/CustomerConfirmOrder";
 
 function App() {
 
@@ -41,11 +43,11 @@ function App() {
                     <Route path={"/admin/main/orders"} element={<AdminOrders/>}/>
                     <Route path={"/admin/main/goods"} element={<AdminGoodsPage/>}/>
                     <Route path={"/admin/main/goods/good"} element={<AddGoodForm/>}/>
-                    <Route path={"/admin/main/orders/:order/:address"} element={<ChangeOrderForm/>}/>
+                    <Route path={"/admin/main/orders/order"} element={<ChangeOrderForm/>}/>
                     <Route path={"/admin/main/reviews"} element={<Reviews/>}/>
-                    <Route path={"/admin/main/orders/secondstep/:order/:deliveryaddress/:customeraddress"}
+                    <Route path={"/admin/main/orders/secondstep"}
                            element={<ChangeOrderFormSecondStep/>}/>
-                    <Route path={"/admin/main/orders/confirm/:order/:address/:customeraddress/:executor"}
+                    <Route path={"/admin/main/orders/order/confirm"}
                            element={<ConfirmUpdateOrder/>}/>
                 </Route>
 
@@ -56,7 +58,9 @@ function App() {
                     <Route path={"/customer/main/orders"} element={<CustomerOrders/>}/>
                     <Route path={"/customer/main/review"} element={<CustomerReview/>}/>
                     <Route path={"/customer/main/reviews"} element={<Reviews/>}/>
+                    <Route path={"/customer/main/confirm/order"} element={<CustomerConfirmOrder/>}/>
                     <Route path={"/customer/main/orders/order/:name/:price"} element={<CustomerOrderForm/>}/>
+                    <Route path={"/customer/main/orders/order/issue"} element={<CustomerSelectIssuePoint/>}/>
                 </Route>
 
                 <Route path={"/staff/main"} element={<><Navbar staff="true"/><Outlet/></>}>

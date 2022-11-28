@@ -29,9 +29,9 @@ export default function AdminOrders() {
             })
     };
 
-    const changeOrder = async (orderName, userAddress) =>{
-        console.log(orderName, userAddress)
-       navigate(`/admin/main/orders/${orderName}/${userAddress}`)
+    const changeOrder = async (order) =>{
+        console.log(order)
+       navigate(`/admin/main/orders/order`, {state: order})
     }
 
     return (
@@ -40,8 +40,8 @@ export default function AdminOrders() {
                 <table className="table border shadow">
                     <thead>
                     <tr>
-                        <th scope="col" className="text-center">Order Name</th>
                         <th scope="col" className="text-center">Good Name</th>
+                        <th scope="col" className="text-center">Status</th>
                         <th scope="col" className="text-center">Executor</th>
                         <th scope="col" className="text-center">Customer Login</th>
                         <th scope="col" className="text-center">Delivery Date</th>
@@ -52,19 +52,19 @@ export default function AdminOrders() {
                     </tr>
                     </thead>
                     <tbody>
-                    {ordersList.map((good, index) => (
+                    {ordersList.map((order, index) => (
                         <tr key={index}>
-                            <td className="text-center">{good.orderName}</td>
-                            <td className="text-center">{good.goodName}</td>
-                            {good.executorLogin !== 'executor' ? <td className="text-center">{good.executorLogin}</td>
+                            <td className="text-center">{order.goodName}</td>
+                            <td className="text-center">{order.status}</td>
+                            {order.executorLogin !== 'executor' ? <td className="text-center">{order.executorLogin}</td>
                                 : <td className="text-center"></td>}
-                            <td className="text-center">{good.customerLogin}</td>
-                            <td className="text-center">{good.deliveryDate}</td>
-                            <td className="text-center">{good.orderDate}</td>
-                            <td className="text-center">{good.userAddress}</td>
-                            <td className="text-center">{good.deliveryAddress}</td>
+                            <td className="text-center">{order.customerLogin}</td>
+                            <td className="text-center">{order.deliveryDate}</td>
+                            <td className="text-center">{order.orderDate}</td>
+                            <td className="text-center">{order.userAddress}</td>
+                            <td className="text-center">{order.deliveryAddress}</td>
                             <td className="text-center">
-                                <button className="btn btn-primary mr-2" onClick={()=>changeOrder(good.orderName, good.userAddress)}>Change</button>
+                                <button className="btn btn-primary mr-2" onClick={()=>changeOrder(order)}>Change</button>
                             </td>
                         </tr>
                     ))}

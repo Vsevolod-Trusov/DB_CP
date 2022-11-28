@@ -1,30 +1,23 @@
 import React from "react";
-import {useNavigate, useParams} from "react-router-dom";
+import {useLocation, useNavigate, useParams} from "react-router-dom";
 
 export default function ConfirmUpdateOrder() {
     const navigate = useNavigate()
-    const {order, address, executor, customeraddress} = useParams();
+    let location = useLocation()
+
     const back = () => {
-        navigate(`/admin/main/orders/secondstep/${order}/${address}/${customeraddress}`)
+        navigate(`/admin/main/orders/secondstep`, {state: location.state})
     }
 
     const onSubmit = async (e) => {
         e.preventDefault()
-        console.log(JSON.stringify({
-            orderName: order,
-            deliveryAddress: address,
-            executorLogin: executor
-        }))
+        console.log(JSON.stringify(location.state))
         await fetch("http://localhost:8080/api/admin/order", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                orderName: order,
-                deliveryAddress: address,
-                executorLogin: executor
-            })
+            body: JSON.stringify(location.state)
         })
             .then(response => {
                 if (response.status === 200) {
@@ -53,7 +46,7 @@ export default function ConfirmUpdateOrder() {
                                 type="text"
                                 className="form-control"
                                 name="order"
-                                value={order}
+                                value={location.state.orderName}
                                 readOnly={true}
                             />
                         </div>
@@ -65,7 +58,7 @@ export default function ConfirmUpdateOrder() {
                                 type="text"
                                 className="form-control"
                                 name="address"
-                                value={address}
+                                value={location.state.deliveryAddress}
                                 readOnly={true}
                             />
                         </div>
@@ -77,7 +70,19 @@ export default function ConfirmUpdateOrder() {
                                 type="text"
                                 className="form-control"
                                 name="executor"
-                                value={executor}
+                                value={location.state.executorLogin}
+                                readOnly={true}
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="price" className="form-label">
+                                Order price
+                            </label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                name="price"
+                                value={location.state.price}
                                 readOnly={true}
                             />
                         </div>

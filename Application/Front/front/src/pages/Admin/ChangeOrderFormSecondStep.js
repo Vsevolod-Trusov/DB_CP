@@ -1,16 +1,16 @@
 import React, {useEffect, useState} from "react";
-import {useNavigate, useParams} from "react-router-dom";
+import {useLocation, useNavigate, useParams} from "react-router-dom";
 
 export default function ChangeOrderFormSecondStep() {
-    let {order, deliveryaddress,customeraddress} = useParams();
+    let location = useLocation();
     const [executorsList, setExecutorsList] = useState([]);
     const navigate = useNavigate();
     useEffect(() => {
         loadeExecutors()
     }, []);
     const loadeExecutors = async () => {
-        console.log(deliveryaddress)
-        await fetch(`http://localhost:8080/api/admin/staff/${deliveryaddress}`, {
+        console.log(location.state.deliveryAddress)
+        await fetch(`http://localhost:8080/api/admin/staff/${location.state.deliveryAddress}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json'
@@ -30,10 +30,11 @@ export default function ChangeOrderFormSecondStep() {
             })
     };
     const confirmUpdate = async (executorLogin) => {
-        navigate(`/admin/main/orders/confirm/${order}/${deliveryaddress}/${customeraddress}/${executorLogin}`)
+        location.state.executorLogin = executorLogin;
+       navigate(`/admin/main/orders/order/confirm`, {state: location.state})
     };
     const back = () => {
-        navigate(`/admin/main/orders/${order}/${customeraddress}`)
+        navigate(`/admin/main/orders/order`, {state: location.state})
     }
 
     return (

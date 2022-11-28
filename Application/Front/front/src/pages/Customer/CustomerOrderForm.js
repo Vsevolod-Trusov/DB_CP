@@ -2,17 +2,19 @@ import React, {useState} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import Form from "react-bootstrap/Form";
 
-export default function CustomerOrderForm(props) {
+export default function CustomerOrderForm() {
     const navigate = useNavigate();
     const {name, price} = useParams();
-    console.log(name)
-    console.log(price)
     const [order, setOrder] = useState({
         customerLogin: window.localStorage.getItem("customer_login"),
         goodName: name,
         orderDate: new Date(),
-        deliveryDate: new Date()
+        deliveryDate: new Date(),
+        price: price,
+        deliveryType: "pickup",
+        deliveryAddress: "",
     });
 
     let [deliveryDate, setDeliveryDate] = useState(new Date());
@@ -22,7 +24,7 @@ export default function CustomerOrderForm(props) {
     };
 
     const onSubmit = (e) => {
-        e.preventDefault();
+        e.preventDefault()
         order.deliveryDate = deliveryDate.setHours(deliveryDate.getHours() + 3);
         order.orderDate = order.orderDate.setHours(order.orderDate.getHours() + 3);
 
@@ -55,16 +57,22 @@ export default function CustomerOrderForm(props) {
             })
     };
 
+    const onSelectIssuePoint = () =>{
+        order.deliveryDate = deliveryDate.setHours(deliveryDate.getHours() + 3);
+        order.orderDate = order.orderDate.setHours(order.orderDate.getHours() + 3);
+        order.price = price;
+        navigate(`/customer/main/orders/order/issue`, {state: order})
+    }
+
     return (
         <div className="container col-md-6 offset-md-3 border rounded p-4 mt-2 shadow">
             <h2 className="text-center m-4">Order</h2>
-            <form onSubmit={(e) => onSubmit(e)}>
+            <form >
                 <div className="mb-3">
                     <label htmlFor="goodName" className="form-label">
                         Good Name
                     </label>
                     <input
-                        cursor="pointer"
                         type="text"
                         className="form-control"
                         name="goodName"
@@ -85,14 +93,23 @@ export default function CustomerOrderForm(props) {
 
                 <div className="mb-3">
                     <label htmlFor="tourDate" className="form-label">
-                        Tour date
+                        Delivery date
                     </label>
                     <DatePicker name="tourDate" className="form-control" selected={deliveryDate}
                                 onChange={(date: Date) => setDeliveryDate(date)}/>
                 </div>
 
-                <div>
-                    CHOOSE DELYVERY METHOD
+                <div className="mb-3">
+                    <label htmlFor="deliveryType" className="form-label">
+                        Delivery Type
+                    </label>
+                    <Form.Select aria-label="Default select example"
+                                 name={"deliveryType"}
+                                 value={order.deliveryType}
+                                 onChange={(e)=>onInputChange(e)} >
+                        <option value={"pickup"}>pickup</option>
+                        <option value={"courier"}>courier</option>
+                    </Form.Select>
                 </div>
 
                 <Link className="btn btn-outline-secondary m-2"
@@ -100,9 +117,10 @@ export default function CustomerOrderForm(props) {
                     Cancel
                 </Link>
 
-
-                <button type="submit" className="btn btn-outline-success">
-                    Confirm Buy
+                <button type="submit"  className="btn btn-outline-success"
+                        onClick={(e) =>
+                        {order.deliveryType === 'pickup'? onSelectIssuePoint() : onSubmit(e)}}>
+                    {order.deliveryType === "pickup" ? "Select issue point" : "Confirm Buy"}
                 </button>
             </form>
         </div>
