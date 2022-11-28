@@ -3,7 +3,6 @@ import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import {BrowserRouter as Router, Navigate, Outlet, Route, Routes} from "react-router-dom";
 import Registration from "./pages/AuthRegMain/Registration";
 import React from "react";
-import Authorisation from "./pages/AuthRegMain/Authorisation";
 import AdminMain from "./pages/Admin/AdminMain";
 import AdminGoodsPage from "./pages/Admin/AdminGoodsPage";
 import AdminOrders from "./pages/Admin/AdminOrders";
@@ -24,6 +23,7 @@ import ChangeOrderFormSecondStep from "./pages/Admin/ChangeOrderFormSecondStep";
 import ConfirmUpdateOrder from "./pages/Admin/ConfirmUpdateOrder";
 import CustomerSelectIssuePoint from "./pages/Customer/CustomerSelectIssuePoint";
 import CustomerConfirmOrder from "./pages/Customer/CustomerConfirmOrder";
+import Authorization from "./pages/AuthRegMain/Authorization";
 
 function App() {
 
@@ -35,7 +35,7 @@ function App() {
                 }>
                     <Route path="/" element={<Main/>}/>
                     <Route exac path={"/registration"} element={<Registration/>}/>
-                    <Route path={"/authorization"} element={<Authorisation/>}/>
+                    <Route path={"/authorization"} element={<Authorization/>}/>
                 </Route>
 
                 <Route path={"/admin/main"} element={<><Navbar admin="true"/><Outlet/></>}>

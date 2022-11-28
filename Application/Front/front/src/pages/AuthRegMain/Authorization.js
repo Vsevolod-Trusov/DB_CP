@@ -1,7 +1,8 @@
 import React, {useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
 
-export default function Authorisation() {
+
+export default function Authorization() {
 
     const navigate = useNavigate();
     const [user, setUser] = useState({
@@ -58,7 +59,7 @@ export default function Authorisation() {
         <div className="container">
             <div className="row">
                 <div className="col-md-6 offset-md-3 border rounded p-4 mt-2 shadow">
-                    <h2 className="text-center m-4" >Authorisation</h2>
+                    <h2 className="text-center m-4" >Authorization</h2>
 
                     <form onSubmit={(e) => onSubmit(e)}>
                         <div className="mb-3">
