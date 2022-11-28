@@ -11,14 +11,38 @@ export default function Authorization() {
     });
 
     const { login, password } = user;
-
+    const [showError, setShowError] = useState("")
     const onInputChange = (e) => {
         setUser({ ...user, [e.target.name]: e.target.value });
     };
 
+    const checkData = () => {
+        if (login.length <= 0) {
+            setShowError("Login is empty")
+            return false
+        }
+        if (login.length > 20) {
+            setShowError("Wrong login. Max length is 20 characters")
+            return false
+        }
+        if (password.length <= 0) {
+            setShowError("Password is empty")
+            return false
+        }
+        if (password.length > 200) {
+            setShowError("Wrong password. Max length is 200 characters")
+            return false
+        }
+        return true
+    }
+
     const onSubmit =  async (e) => {
         e.preventDefault();
-        console.log("here")
+
+        if (!checkData()) {
+            return
+        }
+
         await fetch("http://localhost:8080/api/admin/authorization", {
             method: 'POST',
             headers: {
@@ -29,11 +53,16 @@ export default function Authorization() {
         })
             .then(response => {
 
-                if (response.status === 200) {
-                    return response.json()
+                if(response.ok){
+                    setShowError("")
                 }
-                throw new Error(`${response.status}: ${response.text()}`)
+                return response.json()
+
             }).then(data => {
+                if(data.message){
+                    setShowError(data.message)
+                    return
+                }
 
                 if (data.role === 'user') {
                     window.localStorage.setItem("customer_login", `${data.login}`)
@@ -50,8 +79,6 @@ export default function Authorization() {
                     window.localStorage.setItem("staff_role", `${data.role}`)
                     navigate("/staff/main")
                 }
-            }).catch(error => {
-                alert(error);
             })
     };
 
@@ -87,6 +114,9 @@ export default function Authorization() {
                                 value={password}
                                 onChange={(e) => onInputChange(e)}
                             />
+                        </div>
+                        <div className="mb-3">
+                            <p className="text-danger" >{showError}</p>
                         </div>
                         <button type="submit" className="btn btn-outline-primary" onClick={(e)=>onSubmit(e)}>
                             Sign In

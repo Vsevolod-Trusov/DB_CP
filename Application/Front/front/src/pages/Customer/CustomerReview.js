@@ -9,16 +9,28 @@ export default function CustomerReview() {
         estimation : 0,
         reviewerLogin: window.localStorage.getItem("customer_login")
     });
-
+    const [showError, setShowError] = useState("")
     let {content, estimation} = review;
 
     const onInputChange = (e) => {
         setReview({...review, [e.target.name]: e.target.value});
     };
 
+    const checkData = () => {
+        if (content === "") {
+            setShowError("Content is empty");
+            return false;
+        }
+        return true
+    }
+
     const onSubmit = async (e) => {
         e.preventDefault();
-        console.log(JSON.stringify(review))
+
+        if (!checkData()) {
+            return
+        }
+
         await fetch("http://localhost:8080/api/user/review", {
             method: 'POST',
             headers: {
@@ -28,16 +40,15 @@ export default function CustomerReview() {
         })
             .then(response => {
 
-                if (response.status === 200) {
-                    return response.text()
+                if (response.ok) {
+                    setShowError("")
+                    navigate("/customer/main")
                 }
-                throw new Error(`${response.status}`)
+                else return response.json()
             }).then(data => {
-                console.log(data)
-                navigate("/customer/main")
-            }).catch(error => {
-                alert(error)
-                console.log(error)
+                if(data.message){
+                    setShowError(data.message)
+                }
             })
     };
 
@@ -69,6 +80,9 @@ export default function CustomerReview() {
                         value={content}
                         onChange={(e) => onInputChange(e)}
                     />
+                </div>
+                <div className="mb-3">
+                    <p className="text-danger" >{showError}</p>
                 </div>
                 <button type="submit" className="btn btn-outline-primary">
                     Send

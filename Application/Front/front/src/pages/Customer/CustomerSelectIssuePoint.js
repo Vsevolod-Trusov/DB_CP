@@ -20,18 +20,14 @@ export default function CustomerSelectIssuePoint() {
                 if (response.status === 200) {
                     return response.json()
                 }
-                throw new Error(`${response.status}: ${response.text()}`)
             }).then(data => {
                 setPointsList([...data]);
-            }).catch(error => {
-                alert(error);
             })
     };
 
     const confirmOrder = (deliveryPoint) =>{
         let sendedOrder = location.state;
         sendedOrder.deliveryAddress = deliveryPoint;
-        console.log(`Order: ${JSON.stringify(sendedOrder)}`)
         navigate("/customer/main/confirm/order", {state: sendedOrder});
     }
 
@@ -50,7 +46,7 @@ export default function CustomerSelectIssuePoint() {
                     {pointsList.map((point, index) => (
                         <tr key={index}>
                             <td className="text-center">{point.deliveryPointName}</td>
-                            <td className="text-center">{point.distance}</td>
+                            <td className="text-center">{`${point.distance.toFixed(3)} km`}</td>
                             <td className="text-center">
                                 <button className="btn btn-success mr-2" onClick={()=>confirmOrder(point.deliveryPointName)}>Select</button>
                             </td>

@@ -1,9 +1,10 @@
-import React from "react";
-import {useLocation, useNavigate, useParams} from "react-router-dom";
+import React, {useState} from "react";
+import {useLocation, useNavigate} from "react-router-dom";
 
 export default function ConfirmUpdateOrder() {
     const navigate = useNavigate()
     let location = useLocation()
+    const [showError, setShowError] = useState("")
 
     const back = () => {
         navigate(`/admin/main/orders/secondstep`, {state: location.state})
@@ -11,6 +12,7 @@ export default function ConfirmUpdateOrder() {
 
     const onSubmit = async (e) => {
         e.preventDefault()
+        location.state.price = location.state.price.toFixed(2)
         console.log(JSON.stringify(location.state))
         await fetch("http://localhost:8080/api/admin/order", {
             method: 'POST',
@@ -19,18 +21,20 @@ export default function ConfirmUpdateOrder() {
             },
             body: JSON.stringify(location.state)
         })
+
             .then(response => {
-                if (response.status === 200) {
+                if (response.ok) {
                     {
                         navigate(`/admin/main/orders`)
-                        return response.text()
+                        return
                     }
                 }
-                throw new Error(`${response.status}`)
+                return response.json()
+
             }).then(data => {
-                console.log(data)
-            }).catch(error => {
-                alert(error)
+                if (data.message) {
+                    setShowError(data.message)
+                }
             })
     }
 
@@ -82,11 +86,13 @@ export default function ConfirmUpdateOrder() {
                                 type="text"
                                 className="form-control"
                                 name="price"
-                                value={location.state.price}
+                                value={location.state.price.toFixed(2)}
                                 readOnly={true}
                             />
                         </div>
-
+                        <div className="mb-3">
+                            <p className="text-danger">{showError}</p>
+                        </div>
                         <button className="btn btn-outline-secondary m-2" onClick={() => back()}
                         >
                             Cancel

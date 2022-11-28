@@ -95,10 +95,14 @@ export default function CustomerOrders() {
                             <td className="text-center">{good.orderDate}</td>
                             <td className="text-center">{good.price === 0?"":good.price}</td>
                             <td className="text-center">
-                                <button className="btn btn-primary me-2"
-                                        onClick={() => onTook(good.orderName)}>Took
-                                </button>
-                                <button className="btn btn-danger"
+                                {
+                                    good.deliveryType === 'pickup'?
+                                    <button className="btn btn-primary me-2"
+                                    onClick={() => onTook(good.orderName)}>Took
+                                    </button>
+                                        :<></>
+                                }
+                                <button className="btn btn-danger justify-content-end"
                                         onClick={() => onDelete(good.orderName)}>Delete
                                 </button>
                             </td>

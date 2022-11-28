@@ -4,13 +4,13 @@ import {Link, Navigate, Outlet, Route, Routes} from "react-router-dom";
 export default function Main() {
     return (
         <div className="container">
-            <div>
+            <div >
                 Main
             </div>
-            <Link className="btn border-1" to="/registration">
+            <Link className="btn btn-primary me-2" to="/registration">
                 Sign Up
             </Link>
-            <Link className="btn border-1"  to="/authorization">
+            <Link className="btn btn-primary"  to="/authorization">
                 Sign In
             </Link>
         </div>

@@ -119,8 +119,6 @@ export default function Registration() {
                     setShowError(data.message)
                 }
 
-            }).catch(error => {
-                setShowError(error.message)
             })
 
     };

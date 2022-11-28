@@ -11,9 +11,35 @@ export default function AddGoodForm() {
     });
 
     let {name, description, price} = good;
+    const [showError, setShowError] = useState("")
 
-     const sendGood = () => {
-         fetch("http://localhost:8080/api/admin/good",
+    const checkData = () => {
+        if (name.length <= 0) {
+            setShowError("Good name is empty")
+            return false
+        }
+        if (name.length > 20) {
+            setShowError("Wrong name. Max length is 20 characters")
+            return false
+        }
+        if (description.length <= 0) {
+            setShowError("Description is empty")
+            return false
+        }
+
+        if (description.length > 300) {
+            setShowError("Wrong description. Max length is 300 characters")
+            return false
+        }
+
+        return true
+    }
+
+     const sendGood = async () => {
+         if (!checkData()) {
+             return
+         }
+         await fetch("http://localhost:8080/api/admin/good",
              {
                  method: 'POST',
                  headers:
@@ -24,15 +50,15 @@ export default function AddGoodForm() {
              }
          )
              .then(response => {
-                 if (response.status === 200) {
-                     return response.text()
+                 if (response.ok) {
+                     setShowError("")
+                     navigate("/admin/main/goods")
                  }
-                 throw new Error(`${response.status}`)
+                 return response.json()
              }).then(data => {
-             console.log(data)
-             navigate("/admin/main/goods")
-         }).catch(error => {
-             alert(error);
+                 if(data.message){
+                     setShowError(data.message)
+                 }
          })
      }
 
@@ -42,7 +68,6 @@ export default function AddGoodForm() {
 
     const onSubmit = (e) => {
         e.preventDefault();
-        console.log(JSON.stringify(good));
         sendGood();
     }
 
@@ -80,6 +105,9 @@ export default function AddGoodForm() {
                     </label>
                     <textarea name="description" className="form-control" value={description}
                               onChange={e => onInputChange(e)}/>
+                </div>
+                <div className="mb-3">
+                    <p className="text-danger" >{showError}</p>
                 </div>
                 <Link className="btn btn-secondary me-2" to="/admin/main/goods">
                     Cancel

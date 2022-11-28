@@ -13,51 +13,61 @@ export default function CustomerOrderForm() {
         orderDate: new Date(),
         deliveryDate: new Date(),
         price: price,
-        deliveryType: "pickup",
-        deliveryAddress: "",
+        deliveryType: "pickup", deliveryAddress: "",
     });
 
     let [deliveryDate, setDeliveryDate] = useState(new Date());
+    const [showError, setShowError] = useState("")
 
     const onInputChange = (e) => {
         setOrder({...order, [e.target.name]: e.target.value});
     };
 
-    const onSubmit = (e) => {
+    function diffDates(day_one, day_two) {
+        return (day_one - day_two) / (60 * 60 * 24 * 1000);
+    };
+
+    const checkData = () => {
+        if (Math.ceil(diffDates(deliveryDate, order.orderDate)) < 0) {
+            setShowError("Wrong delivery date value")
+            return false;
+        }
+        return true;
+    }
+
+    const onSubmit = async (e) => {
         e.preventDefault()
+
+
+        if (!checkData()) {
+            return
+        }
+
         order.deliveryDate = deliveryDate.setHours(deliveryDate.getHours() + 3);
         order.orderDate = order.orderDate.setHours(order.orderDate.getHours() + 3);
-
-        if(order.deliveryDate - order.orderDate < 0)
-            alert("Wrong delivery Date Data")
-
-        console.log(JSON.stringify(order))
-
-        fetch("http://localhost:8080/api/user/order", {
-            method: 'POST',
-            headers: {
-                'Content-type': 'application/json',
-                'Accept': 'text/plain',
-            },
-            body: JSON.stringify(order)
+        await fetch("http://localhost:8080/api/user/order", {
+            method: 'POST', headers: {
+                'Content-type': 'application/json', 'Accept': 'text/plain',
+            }, body: JSON.stringify(order)
         })
             .then(response => {
 
-                if (response.status === 200) {
-                    console.log(response.text)
-                    return response.text()
+                if (response.ok) {
+                    setShowError("")
+                    navigate("/customer/main/goods")
                 }
-                throw new Error(`${response.status}`)
+                return response.json()
             }).then(data => {
-                console.log(data)
-                navigate("/customer/main/goods")
-            }).catch(error => {
-            alert(error.message)
-            console.log(error)
+                if (data.message) {
+                    setShowError(data.message)
+                }
             })
     };
 
-    const onSelectIssuePoint = () =>{
+    const onSelectIssuePoint = () => {
+        if (!checkData()) {
+            return
+        }
         order.deliveryDate = deliveryDate.setHours(deliveryDate.getHours() + 3);
         order.orderDate = order.orderDate.setHours(order.orderDate.getHours() + 3);
         order.price = price;
@@ -96,6 +106,7 @@ export default function CustomerOrderForm() {
                         Delivery date
                     </label>
                     <DatePicker name="tourDate" className="form-control" selected={deliveryDate}
+
                                 onChange={(date: Date) => setDeliveryDate(date)}/>
                 </div>
 
@@ -106,20 +117,23 @@ export default function CustomerOrderForm() {
                     <Form.Select aria-label="Default select example"
                                  name={"deliveryType"}
                                  value={order.deliveryType}
-                                 onChange={(e)=>onInputChange(e)} >
+                                 onChange={(e) => onInputChange(e)}>
                         <option value={"pickup"}>pickup</option>
                         <option value={"courier"}>courier</option>
                     </Form.Select>
                 </div>
-
+                <div className="mb-3">
+                    <p className="text-danger">{showError}</p>
+                </div>
                 <Link className="btn btn-outline-secondary m-2"
                       to="/customer/main/goods">
                     Cancel
                 </Link>
 
-                <button type="submit"  className="btn btn-outline-success"
-                        onClick={(e) =>
-                        {order.deliveryType === 'pickup'? onSelectIssuePoint() : onSubmit(e)}}>
+                <button type="button" className="btn btn-outline-success"
+                        onClick={(e) => {
+                            order.deliveryType === 'pickup' ? onSelectIssuePoint() : onSubmit(e)
+                        }}>
                     {order.deliveryType === "pickup" ? "Select issue point" : "Confirm Buy"}
                 </button>
             </form>

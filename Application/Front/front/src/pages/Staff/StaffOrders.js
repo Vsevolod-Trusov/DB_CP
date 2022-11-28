@@ -1,8 +1,9 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import {Navigate, Outlet, Route, Routes} from "react-router-dom";
 
 export default function StaffOrders() {
     const [ordersList , setOrdersList] = React.useState([]);
+    const [showError, setShowError] = useState("")
 
     useEffect(() => {
         loadOrders()
@@ -16,15 +17,14 @@ export default function StaffOrders() {
             }
         })
             .then(response => {
-                if (response.status === 200) {
-                    return response.json()
-                }
-                throw new Error(`${response.status}: ${response.text()}`)
+               return response.json()
+
             }).then(data => {
+                if(data.message) {
+                    setShowError(data.message)
+                    return
+                }
                 setOrdersList([...data]);
-                console.log(ordersList)
-            }).catch(error => {
-                alert(error);
             })
     };
 
@@ -34,20 +34,24 @@ export default function StaffOrders() {
         })
             .then(response => {
 
-                if (response.status === 200) {
+                if (response.ok) {
                     return response.text()
                 }
-                throw new Error(`${response.status}`)
+                return response.json()
             }).then(data => {
+                if(data.message) {
+                    setShowError(data.message)
+                    return
+                }
                 loadOrders()
-                }).catch(error => {
-                alert(error);
-            })
+                })
     }
 
     return (
         <div className="container">
-            Customer Goods table
+            <div className="mb-3">
+                <p className="text-danger" >{showError}</p>
+            </div>
             <div className="py-4">
                 <table className="table border shadow">
                     <thead>

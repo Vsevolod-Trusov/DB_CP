@@ -1,14 +1,14 @@
-import React from "react";
+import React, {useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 
 export default function CustomerConfirmOrder() {
     const navigate = useNavigate();
     let location = useLocation();
     let order = location.state;
+    const [showError, setShowError] = useState("")
 
     const confirmOrder = async (e) => {
         e.preventDefault()
-        console.log(order)
         await fetch("http://localhost:8080/api/user/order", {
             method: 'POST',
             headers: {
@@ -18,18 +18,15 @@ export default function CustomerConfirmOrder() {
             body: JSON.stringify(order)
         })
             .then(response => {
-
-                if (response.status === 200) {
-                    console.log(response.text)
-                    return response.text()
+                if (response.ok) {
+                    navigate("/customer/main/goods")
+                    return
                 }
-                throw new Error(`${response.status}`)
+                return response.json()
             }).then(data => {
-            console.log(data)
-            navigate("/customer/main/goods")
-        }).catch(error => {
-            alert(error.message)
-            console.log(error)
+                if(data.message){
+                    setShowError(data.message)
+                }
         })
     };
 
@@ -71,7 +68,7 @@ export default function CustomerConfirmOrder() {
                     <input type="text" name="deliveryDate"
                            className="form-control"
                            readOnly={true}
-                           value={`${new Date(location.state.deliveryDate).getDate()}.${new Date(location.state.deliveryDate).getMonth()+1}.${new Date(location.state.deliveryDate).getFullYear()}`}/>
+                           value={`${new Date(location.state.deliveryDate).toISOString().substring(0,10)}`}/>
 
                 </div>
 
@@ -95,7 +92,9 @@ export default function CustomerConfirmOrder() {
                            readOnly={true}
                            value={location.state.deliveryAddress}/>
                 </div>
-
+                <div className="mb-3">
+                    <p className="text-danger" >{showError}</p>
+                </div>
                 <button className="btn btn-outline-secondary m-2"
                         onClick={() => back()}>
                     Cancel

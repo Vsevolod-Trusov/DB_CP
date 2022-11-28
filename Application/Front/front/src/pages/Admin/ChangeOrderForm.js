@@ -79,7 +79,7 @@ export default function ChangeOrderForm() {
                     {pointsList.map((point, index) => (
                         <tr key={index}>
                             <td className="text-center">{point.deliveryPointName}</td>
-                            <td className="text-center">{point.distance}</td>
+                            <td className="text-center">{`${point.distance.toFixed(3)} km`}</td>
                             <td className="text-center">
                                 <button className="btn btn-primary mr-2"  onClick={()=>secondChangeStep(point.deliveryPointName, point.distance)}>Select staff</button>
                             </td>
