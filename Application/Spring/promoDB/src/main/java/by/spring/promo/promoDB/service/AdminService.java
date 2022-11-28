@@ -2,6 +2,7 @@ package by.spring.promo.promoDB.service;
 
 import by.spring.promo.promoDB.entity.Authorization;
 import by.spring.promo.promoDB.entity.Good;
+import by.spring.promo.promoDB.entity.Order;
 import by.spring.promo.promoDB.entity.UserLogin;
 import by.spring.promo.promoDB.repository.AdminRepository;
 import org.modelmapper.ModelMapper;
@@ -43,11 +44,8 @@ public class AdminService {
         return adminRepository.findUnprocessedOrders();
     }
     @Transactional
-    public void updateOrderExecutorAndDeliveryPoint(String getOrderName,
-                                                    String getExecutorLogin,
-                                                    String deliveryPointName)
-    { adminRepository.updateOrderSetExecutorAndDeliveryPoint(getOrderName,
-            getExecutorLogin,  deliveryPointName);
+    public void updateOrderExecutorAndDeliveryPoint(Order order)
+    { adminRepository.updateOrderSetExecutorAndDeliveryPoint(order);
     }
 
     @Transactional

@@ -22,6 +22,10 @@ public class CustomerController {
         this.adminService = adminService;
     }
 
+    @GetMapping("/routes/{userLogin}")
+    public ResponseEntity<List> getRoutesByUserLogin(@PathVariable String userLogin){
+        return ResponseEntity.ok(customerService.getRoutesByUserLogin(userLogin));
+    }
     @PostMapping("/registration")
     public ResponseEntity<String> registration(@RequestBody UserLogin userLogin) {
         adminService.registerUserNote(userLogin.getLogin(), userLogin.getPassword(),

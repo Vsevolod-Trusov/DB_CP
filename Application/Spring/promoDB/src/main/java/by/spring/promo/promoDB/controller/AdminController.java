@@ -75,8 +75,7 @@ public class AdminController {
 
     @PostMapping("/order")
     public ResponseEntity<String> updateOrderExecutorAndDeliveryPoint(@RequestBody Order getOrder){
-        adminService.updateOrderExecutorAndDeliveryPoint(getOrder.getOrderName(),
-                getOrder.getExecutorLogin(), getOrder.getDeliveryAddress());
+        adminService.updateOrderExecutorAndDeliveryPoint(getOrder);
         return ResponseEntity.ok("Order "+ getOrder.getOrderName()+" updated successfully");
     }
 

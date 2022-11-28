@@ -54,4 +54,7 @@ public class CustomerService {
         return customerRepository.getNotExecutedOrdersByLogin(login);
     }
 
+    public List getRoutesByUserLogin(String userLogin) {
+        return customerRepository.getRoutesByUserLogin(userLogin);
+    }
 }

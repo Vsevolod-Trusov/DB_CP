@@ -1,6 +1,7 @@
 package by.spring.promo.promoDB.repository;
 
 import by.spring.promo.promoDB.entity.Authorization;
+import by.spring.promo.promoDB.entity.Order;
 import by.spring.promo.promoDB.entity.UserLogin;
 import by.spring.promo.promoDB.exception.DataNotFoundException;
 import by.spring.promo.promoDB.rowmapper.*;
@@ -97,20 +98,21 @@ public class AdminRepository {
     }
 
     @Transactional
-    public void updateOrderSetExecutorAndDeliveryPoint(String getOrderName,String getExecutorLogin,
-                                                       String getDeliveryPointName) {
+    public void updateOrderSetExecutorAndDeliveryPoint(Order order) {
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withSchemaName("ADMIN")
                 .withCatalogName("admin_package").
                 declareParameters(new SqlParameter("order_name", Types.NVARCHAR),
                                     new SqlParameter("order_executor_login", Types.NVARCHAR),
-                                    new SqlParameter("deliverypoint_name", Types.NVARCHAR))
+                                    new SqlParameter("deliverypoint_name", Types.NVARCHAR),
+                                    new SqlParameter("get_order_price", Types.DECIMAL))
                 .withProcedureName("update_order_executor_deliverypoint");
 
         SqlParameterSource in = new MapSqlParameterSource()
-                .addValue("order_name", getOrderName)
-                .addValue("order_executor_login", getExecutorLogin)
-                .addValue("deliverypoint_name", getDeliveryPointName);
+                .addValue("order_name", order.getOrderName())
+                .addValue("order_executor_login", order.getExecutorLogin())
+                .addValue("deliverypoint_name", order.getDeliveryAddress())
+                .addValue("get_order_price", order.getPrice());
 
 
         simpleJdbcCall.execute(in);
@@ -121,7 +123,7 @@ public class AdminRepository {
        try{
            SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
                    .withSchemaName("ADMIN")
-                   .withCatalogName("admin_package").
+                   .withCatalogName("user_package").
                    declareParameters(new SqlParameter("customer_point_name", Types.NVARCHAR))
                    .withFunctionName("get_route_length_analysis")
                    .returningResultSet("route_length_analysis", new RouteRowMapper());

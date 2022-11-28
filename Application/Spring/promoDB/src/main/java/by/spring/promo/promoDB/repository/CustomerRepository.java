@@ -4,10 +4,7 @@ import by.spring.promo.promoDB.entity.Good;
 import by.spring.promo.promoDB.entity.Order;
 import by.spring.promo.promoDB.entity.Review;
 import by.spring.promo.promoDB.exception.DataNotFoundException;
-import by.spring.promo.promoDB.rowmapper.GoodRowMapper;
-import by.spring.promo.promoDB.rowmapper.HistoryRowMapper;
-import by.spring.promo.promoDB.rowmapper.OrderRowMapper;
-import by.spring.promo.promoDB.rowmapper.ReviewMapper;
+import by.spring.promo.promoDB.rowmapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -93,13 +90,15 @@ public class CustomerRepository {
                             new SqlParameter("get_data_order", Types.DATE),
                             new SqlParameter("get_delivery_date", Types.DATE),
                             new SqlParameter("get_delivery_type", Types.NVARCHAR),
-                            new SqlParameter("get_order_price", Types.DECIMAL));
+                            new SqlParameter("get_order_price", Types.DECIMAL),
+                            new SqlParameter("get_delivery_point_pickup", Types.NVARCHAR));
             SqlParameterSource in = new MapSqlParameterSource().addValue("customer_login", getOrder.getCustomerLogin())
                     .addValue("good_name", getOrder.getGoodName())
                     .addValue("get_data_order", getOrder.getOrderDate())
                     .addValue("get_delivery_date", getOrder.getDeliveryDate())
                     .addValue("get_delivery_type", getOrder.getDeliveryType())
-                    .addValue("get_order_price", getOrder.getPrice());
+                    .addValue("get_order_price", getOrder.getPrice())
+                    .addValue("get_delivery_point_pickup", getOrder.getDeliveryAddress());
             String order = insertOrder.executeFunction(String.class, in);
             return order;
         }catch(DataIntegrityViolationException dataNotFound){
@@ -142,4 +141,15 @@ public class CustomerRepository {
     }
 
 
+    public List getRoutesByUserLogin(String userLogin) {
+        SimpleJdbcCall getRoutes = new SimpleJdbcCall(customerJdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("user_package")
+                .withFunctionName("get_routes_by_user_login")
+                .declareParameters(new SqlParameter("user_login", Types.NVARCHAR))
+                .returningResultSet("routes", new RouteRowMapper());
+        SqlParameterSource in = new MapSqlParameterSource().addValue("user_login", userLogin);
+        List routesList =  getRoutes.executeFunction(List.class, in);
+        return routesList;
+    }
 }
