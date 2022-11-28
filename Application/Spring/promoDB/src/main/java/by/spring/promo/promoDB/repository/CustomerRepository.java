@@ -31,7 +31,8 @@ public class CustomerRepository {
         this.customerJdbcTemplate = customerJdbcTemplate;
     }
 
-    public void addReview(Review getReview) throws DataNotFoundException {
+    //обработчик добавлен
+    public void addReview(Review getReview) throws DataNotFoundException, SQLException {
        try{
            SimpleJdbcCall insertReview = new SimpleJdbcCall(customerJdbcTemplate)
                    .withSchemaName("ADMIN")
@@ -45,8 +46,10 @@ public class CustomerRepository {
                    .addValue("get_estimation", getReview.getEstimation())
                    .addValue("get_login", getReview.getReviewerLogin());;
            insertReview.execute(in);
-       }catch(DataIntegrityViolationException exception){
+       }catch(DataIntegrityViolationException notFoundexception){
            throw new DataNotFoundException("Such login: "+getReview.getReviewerLogin()+" do not exist");
+       }catch(Exception exception){
+           throw new SQLException("Adding review failed");
        }
     }
 
@@ -79,7 +82,8 @@ public class CustomerRepository {
         }
     }
 
-    public String addOrder(Order getOrder){
+    //обработчик добавлен
+    public String addOrder(Order getOrder) throws SQLException {
         try{
             SimpleJdbcCall insertOrder = new SimpleJdbcCall(customerJdbcTemplate)
                     .withSchemaName("ADMIN")
@@ -102,7 +106,9 @@ public class CustomerRepository {
             String order = insertOrder.executeFunction(String.class, in);
             return order;
         }catch(DataIntegrityViolationException dataNotFound){
-            throw new DataNotFoundException("Wrong good name or login");
+            throw new DataNotFoundException("Wrong input data");
+        }catch(Exception exception){
+            throw new SQLException("Adding order failed");
         }
     }
 

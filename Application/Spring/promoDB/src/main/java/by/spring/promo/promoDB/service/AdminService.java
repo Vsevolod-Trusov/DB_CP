@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.List;
 
 @Service
@@ -31,7 +32,7 @@ public class AdminService {
     }
 
     @Transactional
-    public Authorization authorizationUserNote(String getLogin, String getPassword){
+    public Authorization authorizationUserNote(String getLogin, String getPassword) throws SQLException {
         return adminRepository.authorization(getLogin, getPassword);
     }
 
@@ -45,8 +46,7 @@ public class AdminService {
         return adminRepository.findUnprocessedOrders();
     }
     @Transactional
-    public void updateOrderExecutorAndDeliveryPoint(Order order)
-    { adminRepository.updateOrderSetExecutorAndDeliveryPoint(order);
+    public void updateOrderExecutorAndDeliveryPoint(Order order) throws SQLException { adminRepository.updateOrderSetExecutorAndDeliveryPoint(order);
     }
 
     @Transactional
@@ -60,7 +60,7 @@ public class AdminService {
     }
 
     @Transactional
-    public void addGood(String getName, String getDescription, BigDecimal getPrice ) {
+    public void addGood(String getName, String getDescription, BigDecimal getPrice ) throws SQLException {
         adminRepository.addGood(getName, getDescription, getPrice);
     }
     @Transactional

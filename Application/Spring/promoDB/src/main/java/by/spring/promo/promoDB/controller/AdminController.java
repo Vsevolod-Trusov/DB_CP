@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -33,7 +34,7 @@ public class AdminController {
     }
 
     @PostMapping("/good")
-    public ResponseEntity<String> addGood(@RequestBody Good getGood) {
+    public ResponseEntity<String> addGood(@RequestBody Good getGood) throws SQLException {
         adminService.addGood(getGood.getName(), getGood.getDescription(), getGood.getPrice());
         return ResponseEntity.ok("Good "+getGood.getName()+" added successfully");
     }
@@ -59,7 +60,7 @@ public class AdminController {
     }
 
     @PostMapping("/authorization")
-    public ResponseEntity<Authorization> authorization(@RequestBody UserLogin getAuthorization) {
+    public ResponseEntity<Authorization> authorization(@RequestBody UserLogin getAuthorization) throws SQLException {
         return ResponseEntity.ok(adminService.authorizationUserNote(getAuthorization.getLogin(),
                 getAuthorization.getPassword()));
     }
@@ -75,7 +76,7 @@ public class AdminController {
     }
 
     @PostMapping("/order")
-    public ResponseEntity<String> updateOrderExecutorAndDeliveryPoint(@RequestBody Order getOrder){
+    public ResponseEntity<String> updateOrderExecutorAndDeliveryPoint(@RequestBody Order getOrder) throws SQLException {
         adminService.updateOrderExecutorAndDeliveryPoint(getOrder);
         return ResponseEntity.ok("Order "+ getOrder.getOrderName()+" updated successfully");
     }

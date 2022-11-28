@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -36,7 +37,7 @@ public class StaffController {
     }
 
     @PostMapping("/authorization")
-    public ResponseEntity<Authorization> authorization(@RequestBody UserLogin getAuthorization) {
+    public ResponseEntity<Authorization> authorization(@RequestBody UserLogin getAuthorization) throws SQLException {
         return ResponseEntity.ok(adminService.authorizationUserNote(getAuthorization.getLogin(),
                 getAuthorization.getPassword()));
     }
@@ -46,13 +47,13 @@ public class StaffController {
     }
 
     @GetMapping("/order/{orderName}")
-    public ResponseEntity<String> updateOrderStatus(@PathVariable String orderName){
+    public ResponseEntity<String> updateOrderStatus(@PathVariable String orderName) throws SQLException {
         staffService.updateOrderStatus(orderName, "executed");
         return ResponseEntity.ok("Order "+orderName+" updated successfully");
     }
 
     @GetMapping("/orders/{staffLogin}")
-    public ResponseEntity<List> getOrdersByStaffLogin(@PathVariable String staffLogin){
+    public ResponseEntity<List> getOrdersByStaffLogin(@PathVariable String staffLogin) throws SQLException {
         return ResponseEntity.ok(staffService.getOrdersByStaffLogin(staffLogin));
     }
 

@@ -9,6 +9,7 @@ import by.spring.promo.promoDB.rowmapper.GoodRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @Service
@@ -21,7 +22,7 @@ public class CustomerService {
     }
 
     @Transactional
-    public void addReview(Review getReview) throws DataNotFoundException {
+    public void addReview(Review getReview) throws DataNotFoundException, SQLException {
         customerRepository.addReview(getReview);
     }
 
@@ -36,7 +37,7 @@ public class CustomerService {
     }
 
     @Transactional
-    public String addOrder(Order getOrder) {
+    public String addOrder(Order getOrder) throws SQLException {
         return customerRepository.addOrder(getOrder);
     }
     @Transactional

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.sql.SQLException;
 import java.util.List;
 
 @Service
@@ -23,13 +24,12 @@ public class StaffService {
     }
 
     @Transactional
-    public void updateOrderStatus(String getOrderName, String getStatus)
-    {
+    public void updateOrderStatus(String getOrderName, String getStatus) throws SQLException {
         staffRepository.updateOrderStatus(getOrderName, getStatus);
     }
 
     @Transactional
-    public List getOrdersByStaffLogin(String staffLogin) {
+    public List getOrdersByStaffLogin(String staffLogin) throws SQLException {
         return staffRepository.getOrdersByStaffLogin(staffLogin);
     }
 }

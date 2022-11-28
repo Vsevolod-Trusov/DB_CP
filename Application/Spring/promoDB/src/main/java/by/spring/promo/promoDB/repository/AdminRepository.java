@@ -45,6 +45,7 @@ public class AdminRepository {
         return res;
     }
 
+    //обработчик добавлен
     @Transactional
     public void register(String getLogin, String getPassword, String getRole, String getEmail,
                          String getPointName) throws SuchProfileLoginExistsException {
@@ -72,23 +73,30 @@ public class AdminRepository {
        }
     }
 
+    //обработчик добавлен
     @Transactional
-    public Authorization authorization(String getLogin, String getPassword){
-        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                .withSchemaName("ADMIN")
-                .withCatalogName("admin_package")
-                .declareParameters(new SqlParameter("get_login", Types.NVARCHAR),
-                        new SqlParameter("get_password", Types.NVARCHAR))
-                .withFunctionName("authorisation")
-                .returningResultSet("result", new AuthorizationRowMapper());
+    public Authorization authorization(String getLogin, String getPassword) throws SQLException {
+        try{
+            SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                    .withSchemaName("ADMIN")
+                    .withCatalogName("admin_package")
+                    .declareParameters(new SqlParameter("get_login", Types.NVARCHAR),
+                            new SqlParameter("get_password", Types.NVARCHAR))
+                    .withFunctionName("authorisation")
+                    .returningResultSet("result", new AuthorizationRowMapper());
 
-        SqlParameterSource in = new MapSqlParameterSource()
-                .addValue("get_login", getLogin)
-                .addValue("get_password", getPassword);
+            SqlParameterSource in = new MapSqlParameterSource()
+                    .addValue("get_login", getLogin)
+                    .addValue("get_password", getPassword);
 
-        List userLogin =  simpleJdbcCall.executeFunction(List.class, in);
-        Authorization authorization = (Authorization) userLogin.get(0);
-        return authorization;
+            List userLogin =  simpleJdbcCall.executeFunction(List.class, in);
+            Authorization authorization = (Authorization) userLogin.get(0);
+            return authorization;
+        }catch(DataIntegrityViolationException notFoundException){
+            throw new DataNotFoundException("User with login "+getLogin+" doesn't exist");
+        }catch(Exception exception){
+            throw new SQLException("Authorization failed");
+        }
     }
 
     @Transactional
@@ -104,24 +112,30 @@ public class AdminRepository {
     }
 
     @Transactional
-    public void updateOrderSetExecutorAndDeliveryPoint(Order order) {
-        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                .withSchemaName("ADMIN")
-                .withCatalogName("admin_package").
-                declareParameters(new SqlParameter("order_name", Types.NVARCHAR),
-                                    new SqlParameter("order_executor_login", Types.NVARCHAR),
-                                    new SqlParameter("deliverypoint_name", Types.NVARCHAR),
-                                    new SqlParameter("get_order_price", Types.DECIMAL))
-                .withProcedureName("update_order_executor_deliverypoint");
+    public void updateOrderSetExecutorAndDeliveryPoint(Order order) throws SQLException {
+       try{
+           SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                   .withSchemaName("ADMIN")
+                   .withCatalogName("admin_package").
+                   declareParameters(new SqlParameter("order_name", Types.NVARCHAR),
+                           new SqlParameter("order_executor_login", Types.NVARCHAR),
+                           new SqlParameter("deliverypoint_name", Types.NVARCHAR),
+                           new SqlParameter("get_order_price", Types.DECIMAL))
+                   .withProcedureName("update_order_executor_deliverypoint");
 
-        SqlParameterSource in = new MapSqlParameterSource()
-                .addValue("order_name", order.getOrderName())
-                .addValue("order_executor_login", order.getExecutorLogin())
-                .addValue("deliverypoint_name", order.getDeliveryAddress())
-                .addValue("get_order_price", order.getPrice());
+           SqlParameterSource in = new MapSqlParameterSource()
+                   .addValue("order_name", order.getOrderName())
+                   .addValue("order_executor_login", order.getExecutorLogin())
+                   .addValue("deliverypoint_name", order.getDeliveryAddress())
+                   .addValue("get_order_price", order.getPrice());
 
 
-        simpleJdbcCall.execute(in);
+           simpleJdbcCall.execute(in);
+       }catch(DataIntegrityViolationException notFoundException){
+           throw new DataNotFoundException("Order with name "+order.getOrderName()+" doesn't exist");
+       }catch(Exception exception){
+           throw new SQLException("Update failed");
+       }
     }
 
     @Transactional
@@ -156,22 +170,26 @@ public class AdminRepository {
         List points =  simpleJdbcCall.executeFunction(List.class);
         return points;
     }
+//обработчик добавлен
+    public void addGood(String getName, String getDescription, BigDecimal getPrice) throws SQLException {
+        try{
+            SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                    .withSchemaName("ADMIN")
+                    .withCatalogName("admin_package")
+                    .declareParameters(new SqlParameter("good_name", Types.NVARCHAR),
+                            new SqlParameter("good_description", Types.NVARCHAR),
+                            new SqlParameter("good_price", Types.NUMERIC))
+                    .withProcedureName("add_good");
 
-    public void addGood(String getName, String getDescription, BigDecimal getPrice) {
-        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                .withSchemaName("ADMIN")
-                .withCatalogName("admin_package")
-                .declareParameters(new SqlParameter("good_name", Types.NVARCHAR),
-                        new SqlParameter("good_description", Types.NVARCHAR),
-                        new SqlParameter("good_price", Types.NUMERIC))
-                .withProcedureName("add_good");
+            SqlParameterSource in = new MapSqlParameterSource()
+                    .addValue("good_name", getName)
+                    .addValue("good_description", getDescription)
+                    .addValue("good_price", getPrice);
 
-        SqlParameterSource in = new MapSqlParameterSource()
-                .addValue("good_name", getName)
-                .addValue("good_description", getDescription)
-                .addValue("good_price", getPrice);
-
-       simpleJdbcCall.execute(in);
+            simpleJdbcCall.execute(in);
+        }catch(Exception exception){
+            throw new SQLException("Adding good failed");
+        }
     }
 
     @ExceptionHandler

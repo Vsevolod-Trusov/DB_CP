@@ -8,6 +8,7 @@ import by.spring.promo.promoDB.service.CustomerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -35,12 +36,12 @@ public class CustomerController {
     }
 
     @PostMapping("/authorization")
-    public ResponseEntity<Authorization> authorization(@RequestBody UserLogin getAuthorization) {
+    public ResponseEntity<Authorization> authorization(@RequestBody UserLogin getAuthorization) throws SQLException {
         return ResponseEntity.ok(adminService.authorizationUserNote(getAuthorization.getLogin(),
                 getAuthorization.getPassword()));
     }
     @PostMapping("/review")
-    public ResponseEntity<String> addReview(@RequestBody Review getReview) throws DataNotFoundException {
+    public ResponseEntity<String> addReview(@RequestBody Review getReview) throws DataNotFoundException, SQLException {
         customerService.addReview(getReview);
         return ResponseEntity.ok("Review added successfully");
     }
@@ -56,7 +57,7 @@ public class CustomerController {
     }
 
     @PostMapping("/order")
-    public ResponseEntity<String> addOrder(@RequestBody Order getOrder) {
+    public ResponseEntity<String> addOrder(@RequestBody Order getOrder) throws SQLException {
         String orderName = customerService.addOrder(getOrder);
         return ResponseEntity.ok("Order "+orderName+" added successfully");
     }
