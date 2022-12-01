@@ -103,6 +103,10 @@ from orders o
          join userlogin ul on u.userloginid = ul.id
          join goodstoorder gto on o.id = gto.orderid
          join goods g on gto.goodsid = g.id;
+
+--history_table_view
+create or replace view history_table_view as
+    select * from history;
 --analysis_route_view
 drop view analysis_route_view;
 create or replace view analysis_route_view

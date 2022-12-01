@@ -193,7 +193,7 @@ create or replace package body user_package as
         commit;
 
         select goods.id into good_id from goods where goods.name = good_name;
-        user_package.add_history(order_id, customer_login, order_name, unprocessed_status);
+        --user_package.add_history(order_id, customer_login, order_name, unprocessed_status);
         admin_package.add_goods_to_order(order_id, good_id);
         return order_name;
     exception
