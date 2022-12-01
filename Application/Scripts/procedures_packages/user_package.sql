@@ -1,4 +1,6 @@
 create or replace package user_package as
+    --get executor login by order id
+    function get_executor_login_by_order_id(order_id orders.id%type) return userlogin.login%type;
     --get routes by user login
     function get_routes_by_user_login(user_login userlogin.login%type) return sys_refcursor;
     --get analise abount customer poin and all delivery points
@@ -34,6 +36,22 @@ create or replace package user_package as
 end user_package;
 
 create or replace package body user_package as
+    --get executor login by order id
+    function get_executor_login_by_order_id(order_id orders.id%type) return userlogin.login%type
+        is
+        executor_login userlogin.login%type;
+    begin
+        select userlogin.login into executor_login
+         from orders o2
+                  join userprofile
+                       on o2.excecutorprofileid = userprofile.id
+                  join
+              userlogin on userprofile.userloginid = userlogin.id
+         where o2.id = order_id;
+        return executor_login;
+        exception when no_data_found then raise_application_error(-20001, 'No such order');
+    end;
+
     --get routes by user login
     function get_routes_by_user_login(user_login userlogin.login%type) return sys_refcursor
         is
@@ -195,35 +213,10 @@ create or replace package body user_package as
         is
         orders_cursor sys_refcursor;
     begin
-        open orders_cursor for select o1.ordername          as order_name,
-                                      o1.orderdate          as order_date,
-                                      o1.deliverydate       as delivery_date,
-                                      o1.status             as order_status,
-                                      o1.price              as order_price,
-                                      o1.DELIVERYTYPE       as delivery_type,
-                                      goods.name            as good_name,
-                                      userlogin.login       as customer_login,
-                                      (select userlogin.login
-                                       from orders o2
-                                                join userprofile
-                                                     on o2.excecutorprofileid = userprofile.id
-                                                join
-                                            userlogin on userprofile.userloginid = userlogin.id
-                                       where o2.id = o1.id) as executor_login,
-                                      points.point_name     as delivery_point,
-                                      (select points.point_name
-                                       from points
-                                                join orders o2
-                                                     on o2.userlocationid = points.id
-                                       where o2.id = o1.id) as user_point
-                               from orders o1
-                                        join points on o1.deliverylocationid = points.id
-                                        join goodstoorder on o1.id = goodstoorder.orderid
-                                        join goods on goodstoorder.goodsid = goods.id
-                                        join userprofile on o1.CUSTOMERPROFILEID = userprofile.id
-                                        join userlogin on userprofile.userloginid = userlogin.ID
-                               where userlogin.login = user_login
-                                 and o1.status != 'executed';
+        open orders_cursor for select *
+                               from orders_not_executed_view
+                               where orders_not_executed_view.customer_login = user_login
+                                 and orders_not_executed_view.order_status != 'executed';
         return orders_cursor;
     end get_orders_not_executed_by_login;
 
@@ -252,17 +245,8 @@ create or replace package body user_package as
         is
         history_cursor sys_refcursor;
     begin
-        open history_cursor for select g.name         as name,
-                                       h.status       as status,
-                                       o.orderdate    as order_date,
-                                       o.deliverydate as delivery_date
-                                from orders o
-                                         join history h on h.orderid = o.id
-                                         join userprofile u on o.customerprofileid = u.id
-                                         join userlogin ul on u.userloginid = ul.id
-                                         join goodstoorder gto on o.id = gto.orderid
-                                         join goods g on gto.goodsid = g.id
-                                where ul.login = customer_login;
+        open history_cursor for select * from history_view
+                                where history_view.user_login = customer_login;
         return history_cursor;
     end get_history_by_login;
 
@@ -324,23 +308,3 @@ create or replace package body user_package as
             raise_application_error(-20001, sqlerrm);
     end add_review;
 end user_package;
-
-declare
-    test_user_point     POINTS.LOCATION%type;
-    test_delivery_point points.LOCATION%type;
-begin
-    select POINTS.LOCATION into test_user_point from POINTS fetch first 1 rows only;
-    --dbms_output.put_line(test_user_point.SDO_POINT);
-    select POINTS.LOCATION into test_delivery_point from POINTS fetch first 1 rows only;
-    --dbms_output.put_line(test_delivery_point.SDO_POINT);
-    dbms_output.put_line(user_package.get_distance_between_deliverypoint_customer(test_user_point,
-                                                                                  test_delivery_point));
-end;
-
-select sdo_geom.sdo_distance((select POINTS.LOCATION from POINTS order by POINT_NAME desc fetch first 1 rows only),
-                             (select POINTS.LOCATION from POINTS order by POINT_NAME fetch first 1 rows only), 0.005,
-                             'unit=km')
-from dual;
-
-select road
-from roads fetch first 3 rows only;

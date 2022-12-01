@@ -6,6 +6,12 @@ where OBJECT_NAME like '%ADMIN_PACKAGE%'
 drop package admin_package;
 
 create or replace package admin_package is
+    --get cout of orders by executor login
+     function get_count_orders_by_executor_login_id(userlogin_id userlogin.id%type) return number;
+    --get userlocation by order id
+    function get_userlocation_by_order_id(order_id orders.id%type) return points.point_name%type;
+    --get userlogin by order id
+    function get_customerlogin_by_order_id(order_id orders.id%type) return userlogin.login%type;
     --get all notes by role
     function get_all_persons_by_role(role nvarchar2) return sys_refcursor;
     --get all points name
@@ -46,25 +52,68 @@ end admin_package;
 
 
 create or replace package body admin_package is
+    --get executor login by order id
+    function get_count_orders_by_executor_login_id(userlogin_id userlogin.id%type) return number
+        is
+       order_counter number;
+    begin
+        select count(*) into order_counter
+        from orders
+                 join userprofile on ORDERS.EXCECUTORPROFILEID = USERPROFILE.ID
+                 join userlogin ul1
+                      on ul1.id = userprofile.USERLOGINID
+        where ul1.login != 'executor'
+          and ul1.id = userlogin_id
+        and orders.status != 'executed';
+        return order_counter;
+    exception
+        when no_data_found then raise_application_error(-20001, 'No such login');
+    end;
+    --get userlocation by order id
+    function get_userlocation_by_order_id(order_id orders.id%type) return points.point_name%type
+        is
+        point_name points.point_name%type;
+    begin
+        select points.point_name
+        into point_name
+        from points
+                 join orders o2
+                      on o2.userlocationid = points.id
+        where o2.id = order_id;
+        return point_name;
+    exception
+        when no_data_found then raise_application_error(-20001, 'No such order');
+    end;
+    --get userlogin by order id
+    function get_customerlogin_by_order_id(order_id orders.id%type) return userlogin.login%type
+        is
+        get_login userlogin.login%type;
+    begin
+        select userlogin.login
+        into get_login
+        from orders o2
+                 join userprofile
+                      on o2.customerprofileid = userprofile.id
+                 join
+             userlogin on userprofile.userloginid = userlogin.id
+        where o2.id = order_id;
+        return get_login;
+    exception
+        when no_data_found
+            then raise_application_error(-20001, 'No such order');
+    end;
     --get executors by point name
     function get_executors_by_point_name(get_point_name points.point_name%type) return sys_refcursor
         is
         point_id         points.id%type;
         executors_cursor sys_refcursor;
-        executor_login   userlogin.login%type;
         no_such_executors exception;
         pragma exception_init (no_such_executors, -20001);
 
     begin
         select id into point_id from points where points.point_name = get_point_name;
         open executors_cursor for select login,
-                                         (select count(*)
-                                          from orders
-                                                   join userprofile on ORDERS.EXCECUTORPROFILEID = USERPROFILE.ID
-                                                   join userlogin ul1
-                                                        on ul1.id = userprofile.USERLOGINID
-                                          where ul1.login != 'executor'
-                                            and ul1.id = ul2.id) as orders_count
+                                         get_count_orders_by_executor_login_id(ul2.id) as orders_count
                                   from userlogin ul2
                                            join userprofile on ul2.id = userprofile.userloginid
                                   where ul2.role = 'staff'
@@ -73,7 +122,7 @@ create or replace package body admin_package is
         return executors_cursor;
     exception
         when no_data_found then
-             raise_application_error(-20001, 'Such delivery point does not exist');
+            raise_application_error(-20001, 'Such delivery point does not exist');
         when others then
             raise_application_error(-20000, 'get_executors_by_point_name error');
     end;
@@ -89,7 +138,7 @@ create or replace package body admin_package is
         commit;
     exception
         when no_data_found then
-           raise_application_error(-20002, 'Such good does not exist');
+            raise_application_error(-20002, 'Such good does not exist');
         when others then
             raise_application_error(-20001, 'Error in delete_good_by_name');
     end;
@@ -98,9 +147,8 @@ create or replace package body admin_package is
         is
         cursor_name sys_refcursor;
     begin
-        open cursor_name for
-            select point_name, type
-            from points;
+        open cursor_name for select * from all_points_names_view;
+
         return cursor_name;
     end;
     --get all notes by role
@@ -165,7 +213,7 @@ create or replace package body admin_package is
         end if;
     exception
         when no_such_profile_exception then
-            raise_application_error(-20002, 'Such login does not exist');
+            raise_application_error(-20002, 'Invalid login or password');
         when others then
             raise_application_error(-20001, sqlerrm);
     end authorisation;
@@ -196,38 +244,7 @@ create or replace package body admin_package is
         is
         unprocessed_orders_cursor sys_refcursor;
     begin
-        open unprocessed_orders_cursor for select o1.ordername          as order_name,
-                                                  o1.orderdate          as order_date,
-                                                  o1.deliverydate       as delivery_date,
-                                                  o1.status             as order_status,
-                                                  o1.price              as order_price,
-                                                  o1.DELIVERYTYPE       as delivery_type,
-                                                  g.name                as good_name,
-                                                  userlogin.login       as executor_login,
-
-                                                  (select userlogin.login
-                                                   from orders o2
-                                                            join userprofile
-                                                                 on o2.customerprofileid = userprofile.id
-                                                            join
-                                                        userlogin on userprofile.userloginid = userlogin.id
-                                                   where o2.id = o1.id) as customer_login,
-
-                                                  points.point_name     as delivery_point,
-                                                  (select points.point_name
-                                                   from points
-                                                            join orders o2
-                                                                 on o2.userlocationid = points.id
-                                                   where o2.id = o1.id) as user_point
-
-                                           from orders o1
-                                                    join points on o1.deliverylocationid = points.id
-                                                    join goodstoorder gto on o1.id = gto.orderid
-                                                    join goods g on gto.goodsid = g.id
-                                                    join USERPROFILE on o1.excecutorprofileid = userprofile.id
-                                                    join userlogin
-                                                         on userprofile.userloginid = userlogin.id
-                                           where o1.status = 'unprocessed';
+        open unprocessed_orders_cursor for select * from unprocessed_orders_view;
         return unprocessed_orders_cursor;
     end;
 
@@ -262,7 +279,8 @@ create or replace package body admin_package is
         commit;
     exception
         when no_data_found then raise no_data_found;
-        when fk_exception then rollback; raise_application_error(-20002, 'Delivery point or executor profile does not exist');
+        when fk_exception then rollback;
+        raise_application_error(-20002, 'Delivery point or executor profile does not exist');
         when others then raise_application_error(-20001, sqlerrm);
     end update_order_executor_deliverypoint;
 
