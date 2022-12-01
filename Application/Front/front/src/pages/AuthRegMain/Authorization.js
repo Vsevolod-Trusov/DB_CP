@@ -65,18 +65,18 @@ export default function Authorization() {
                 }
 
                 if (data.role === 'user') {
-                    window.localStorage.setItem("customer_login", `${data.login}`)
-                    window.localStorage.setItem("customer_role", `${data.role}`)
+                    window.sessionStorage.setItem("customer_login", `${data.login}`)
+                    window.sessionStorage.setItem("customer_role", `${data.role}`)
                     navigate("/customer/main")
                 }
                 else if (data.role === 'admin'){
-                    window.localStorage.setItem("admin_login", `${data.login}`)
-                    window.localStorage.setItem("admin_role", `${data.role}`)
+                    window.sessionStorage.setItem("admin_login", `${data.login}`)
+                    window.sessionStorage.setItem("admin_role", `${data.role}`)
                     navigate(`/admin/main`)
                 }
                 else if (data.role === 'staff') {
-                    window.localStorage.setItem("staff_login", `${data.login}`)
-                    window.localStorage.setItem("staff_role", `${data.role}`)
+                    window.sessionStorage.setItem("staff_login", `${data.login}`)
+                    window.sessionStorage.setItem("staff_role", `${data.role}`)
                     navigate("/staff/main")
                 }
             })

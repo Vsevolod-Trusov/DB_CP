@@ -7,7 +7,7 @@ export default function CustomerReview() {
     const [review, setReview] = useState({
         content: "",
         estimation : 0,
-        reviewerLogin: window.localStorage.getItem("customer_login")
+        reviewerLogin: window.sessionStorage.getItem("customer_login")
     });
     const [showError, setShowError] = useState("")
     let {content, estimation} = review;

@@ -11,7 +11,7 @@ export default function CustomerSelectIssuePoint() {
     }, []);
 
     const loadPoints = async () => {
-        await fetch(`http://localhost:8080/api/user/routes/${window.localStorage.getItem("customer_login")}`, {
+        await fetch(`http://localhost:8080/api/user/routes/${window.sessionStorage.getItem("customer_login")}`, {
             method: 'GET', headers: {
                 'Accept': 'application/json'
             }

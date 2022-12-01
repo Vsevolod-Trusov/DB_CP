@@ -32,7 +32,7 @@ export default function Navbar(props) {
                     </>
 
                     : props.admin ? <>
-                        <div className="text-white p-md-1">{window.localStorage.getItem("admin_login")}</div>
+                        <div className="text-white p-md-1">{window.sessionStorage.getItem("admin_login")}</div>
                         <div className="container-fluid text-white" style={{paddingRight: "40px"}}>
                             <Link className="btn btn-outline-light m-lg-1" to="/admin/main">
                                 Home
@@ -51,7 +51,7 @@ export default function Navbar(props) {
                             Exit
                         </button>
                     </> : props.customer ? <>
-                        <div className="text-white p-md-1">{window.localStorage.getItem("customer_login")}</div>
+                        <div className="text-white p-md-1">{window.sessionStorage.getItem("customer_login")}</div>
                         <div className="container-fluid text-white" style={{paddingRight: "40px"}}>
                             <Link className="btn btn-outline-light m-lg-1" to="/customer/main">
                                 Home
@@ -76,7 +76,7 @@ export default function Navbar(props) {
                             Exit
                         </button>
                     </> : props.staff ? <>
-                        <div className="text-white p-md-1">{window.localStorage.getItem("staff_login")}</div>
+                        <div className="text-white p-md-1">{window.sessionStorage.getItem("staff_login")}</div>
                         <div className="container-fluid text-white" style={{paddingRight: "40px"}}>
                             <Link className="btn btn-outline-light m-lg-1" to="/staff/main">
                                 Home

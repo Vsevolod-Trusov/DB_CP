@@ -8,7 +8,7 @@ export default function CustomerOrderForm() {
     const navigate = useNavigate();
     const {name, price} = useParams();
     const [order, setOrder] = useState({
-        customerLogin: window.localStorage.getItem("customer_login"),
+        customerLogin: window.sessionStorage.getItem("customer_login"),
         goodName: name,
         orderDate: new Date(),
         deliveryDate: new Date(),
@@ -47,7 +47,7 @@ export default function CustomerOrderForm() {
         order.orderDate = order.orderDate.setHours(order.orderDate.getHours() + 3);
         await fetch("http://localhost:8080/api/user/order", {
             method: 'POST', headers: {
-                'Content-type': 'application/json', 'Accept': 'text/plain',
+                'Content-type': 'application/json',
             }, body: JSON.stringify(order)
         })
             .then(response => {
@@ -56,7 +56,8 @@ export default function CustomerOrderForm() {
                     setShowError("")
                     navigate("/customer/main/goods")
                 }
-                return response.json()
+                else
+                    return response.json()
             }).then(data => {
                 if (data.message) {
                     setShowError(data.message)

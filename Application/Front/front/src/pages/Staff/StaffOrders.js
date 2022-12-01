@@ -10,7 +10,7 @@ export default function StaffOrders() {
     }, []);
 
     const loadOrders = async () => {
-        await fetch(`http://localhost:8080/api/staff/orders/${window.localStorage.getItem("staff_login")}`, {
+        await fetch(`http://localhost:8080/api/staff/orders/${window.sessionStorage.getItem("staff_login")}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json'
