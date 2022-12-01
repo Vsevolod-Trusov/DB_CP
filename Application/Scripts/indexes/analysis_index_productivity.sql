@@ -52,6 +52,23 @@ from orders o1
               on userprofile.userloginid = userlogin.id
 where o1.status = 'unprocessed';
 
+--get_all_persons_by_role
+select login
+from userlogin
+where UserLogin.ROLE = 'staff';
+
+--update_order_executor_deliverypoint
+update orders
+set Orders.Status= 'processed',
+    ORDERS.EXCECUTORPROFILEID = 'asd',
+    orders.DELIVERYLOCATIONID = 'asd',
+    orders.price = 12
+where orders.ordername = 'asd';
+
+--update_order_executor_deliverypoint
+update history
+set history.status = 'processed'
+where history.ordername = 'ASD';
 --end
 
 --staff package
@@ -114,4 +131,26 @@ from orders o
          join goodstoorder gto on o.id = gto.orderid
          join goods g on gto.goodsid = g.id
 where ul.login = 'user';
+
+--get_route_length_analysis
+select p2.point_name                                                             as delivery_point,
+       user_package.get_distance_between_deliverypoint_customer(p2.point_name,
+                                                                'Беларуская 21') as distance,
+       count(*)                                                                  as staff_count
+from userprofile
+         join points p1
+              on userprofile.USERPOINTID = p1.id
+         join userlogin on
+    userprofile.USERLOGINID = userlogin.id
+         join points p2 on p2.id = userprofile.USERPOINTID
+where p2.type = 'staff'
+  and userlogin.role = 'staff'
+  and userlogin.login != 'executor'
+group by p2.point_name, 'Беларуская 21';
+
+--get_distance_between_deliverypoint_customer
+select location
+from points
+where points.type = 'user'
+  and rtrim(POINT_NAME) = rtrim('Беларуская 21');
 --end
