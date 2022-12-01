@@ -284,16 +284,3 @@ create or replace package body admin_package is
 end admin_package;
 
 
---test get_all_persons_by_role
-declare
-    info sys_refcursor;
-    row  nvarchar2(10);
-begin
-    info := admin_package.get_all_persons_by_role('user', 'asd');
-    loop
-        fetch info into row;
-        exit when info%notfound;
-        dbms_output.put_line(row);
-    end loop;
-end;
-

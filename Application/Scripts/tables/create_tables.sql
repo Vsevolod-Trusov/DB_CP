@@ -59,8 +59,6 @@ CREATE TABLE POINTS
     CONSTRAINT CHECK_POINTS_TYPE CHECK(TYPE like 'staff' OR TYPE like 'user')
 );
 
-SELECT ROAD FROM ROADS  where sdo_relate(roads.road, 'mask=anyinteract') = 'TRUE';
-
 /*CREATE TABLE Links(
     ID RAW(32) DEFAULT SYS_GUID(),
     STARTPOINTID RAW(32) DEFAULT SYS_GUID(),
