@@ -14,7 +14,7 @@ end;
 
 --test register
 begin
-    admin_package.register_user('admin', 'Ленина 20', 'qwerty', 'admin', 'admin');
+    admin_package.register_user('asd', 'Ленина 20', 'qwerty', 'admin', 'asd');
 end;
 begin
     admin_package.register_user('executor', 'Ленина 20', 'qwerty', 'staff', 'admin');
@@ -32,14 +32,9 @@ from userprofile;
 
 --test auth
 declare
-    auth_success boolean;
+    auth_success sys_refcursor;
 begin
     auth_success := admin_package.authorisation('admin_test', 'qwerty');
-    if auth_success then
-        dbms_output.put_line('exists');
-    else
-        dbms_output.put_line('not exist');
-    end if;
 end;
 --test encription
 declare
@@ -60,6 +55,10 @@ end;
 --test add good
 begin
     admin_package.add_good('pan', 'for 2 days', 5.25);
+end;
+--test delete good
+begin
+    admin_package.DELETE_GOOD_BY_NAME('asdfg');
 end;
 select *
 from goods;

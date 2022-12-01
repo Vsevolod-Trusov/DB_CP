@@ -19,7 +19,8 @@ create or replace package body staff_package as
         update orders set status = get_status where orders.ordername = order_name;
         update history set status = get_status where history.ordername = order_name;
         commit;
-        exception when others then raise_application_error(-20001, 'Updating order failed');
+        exception when
+            others then rollback; raise_application_error(-20001, 'Updating order failed');
     end change_order_status_by_name;
 
     --get processed orders to staff
@@ -61,7 +62,7 @@ create or replace package body staff_package as
                                            where o1.status = 'processed' and userlogin.login = staff_login;
         return processed_orders_cursor;
         exception when no_data_found then
-            raise no_data_found;
+            raise_application_error(-20001, 'Such staff profile does not exist');
             when others then raise_application_error(-20000, 'Getting orders failed');
         end;
 

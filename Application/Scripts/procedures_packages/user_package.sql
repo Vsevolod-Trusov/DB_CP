@@ -10,7 +10,8 @@ create or replace package user_package as
     function add_order(customer_login userlogin.login%type, good_name goods.name%type,
                        get_data_order date default sysdate, get_delivery_date date,
                        get_delivery_type orders.deliverytype%type,
-                       get_order_price orders.price%type, get_delivery_point_pickup points.point_name%type) return orders.ordername%type;
+                       get_order_price orders.price%type,
+                       get_delivery_point_pickup points.point_name%type) return orders.ordername%type;
     --get orders by login
     function get_orders_not_executed_by_login(user_login userlogin.login%type) return sys_refcursor;
     --add history
@@ -18,9 +19,6 @@ create or replace package user_package as
                           order_name orders.ordername%type, order_status orders.status%type);
     --get history
     function get_history_by_login(customer_login userlogin.login%type) return sys_refcursor;
-    --get good id
-    function get_good_id(good_name goods.name%type, good_description goods.description%type,
-                         good_price goods.price%type) return goods.id%type;
     --get all goods
     function get_all_goods return sys_refcursor;
 
@@ -40,37 +38,44 @@ create or replace package body user_package as
     function get_routes_by_user_login(user_login userlogin.login%type) return sys_refcursor
         is
         routes_by_login sys_refcursor;
-            point_name points.point_name%type;
-            begin
-                select points.point_name into point_name from points join userprofile on userprofile.USERPOINTID = points.id
-                join userlogin on userlogin.id = userprofile.userloginid where userlogin.login = user_login;
+        point_name      points.point_name%type;
+    begin
+        select points.point_name
+        into point_name
+        from points
+                 join userprofile on userprofile.USERPOINTID = points.id
+                 join userlogin on userlogin.id = userprofile.userloginid
+        where userlogin.login = user_login;
 
-                routes_by_login := user_package.get_route_length_analysis(point_name);
-                return routes_by_login;
-                exception when no_data_found then
-                raise no_data_found;
-                when others then raise_application_error(-20000, 'Error in get_routes_by_user_login');
-                end;
-        --get analysis
+        routes_by_login := user_package.get_route_length_analysis(point_name);
+        return routes_by_login;
+    exception
+        when no_data_found then
+            raise_application_error(-20001, 'Such user profile does not exist');
+        when others then raise_application_error(-20000, 'Error in get_routes_by_user_login');
+    end;
+    --get analysis
     function get_route_length_analysis(customer_point_name points.point_name%type) return sys_refcursor
         is
         analysys_route_length_cursor sys_refcursor;
     begin
-        open analysys_route_length_cursor for select p2.point_name as delivery_point,
-                                                      get_distance_between_deliverypoint_customer(p2.point_name,
+        open analysys_route_length_cursor for select p2.point_name                                                    as delivery_point,
+                                                     get_distance_between_deliverypoint_customer(p2.point_name,
                                                                                                  customer_point_name) as distance,
-                                                    count(*) as staff_count
+                                                     count(*)                                                         as staff_count
                                               from userprofile
-                                                               join points p1
-                                                                    on userprofile.USERPOINTID = p1.id
-                                                               join userlogin on
-                                                          userprofile.USERLOGINID = userlogin.id
-                                                   join points p2 on p2.id = userprofile.USERPOINTID
-                                              where  p2.type = 'staff'
-                                                      and userlogin.role= 'staff'
+                                                       join points p1
+                                                            on userprofile.USERPOINTID = p1.id
+                                                       join userlogin on
+                                                  userprofile.USERLOGINID = userlogin.id
+                                                       join points p2 on p2.id = userprofile.USERPOINTID
+                                              where p2.type = 'staff'
+                                                and userlogin.role = 'staff'
                                                 and userlogin.login != 'executor'
                                               group by p2.point_name, customer_point_name;
         return analysys_route_length_cursor;
+    exception
+        when no_data_found then raise_application_error(-20001, 'Such customer point does not exist');
     end;
 
     --get_distance_line
@@ -95,8 +100,8 @@ create or replace package body user_package as
         select sdo_geom.sdo_distance(delivery_point, customer_point, 0.01, 'unit=km') into distance from dual;
         return distance;
     exception
-        when no_data_found then raise no_data_found;
-        when others then raise_application_error(sqlcode, sqlerrm);
+        when no_data_found then raise_application_error(-20002, 'Such delivery or customer point do not exist');
+        when others then raise_application_error(-20001, sqlerrm);
         return -1;
     end get_distance_between_deliverypoint_customer;
 
@@ -115,6 +120,7 @@ create or replace package body user_package as
         unprocessed_status     orders.status%type    := 'unprocessed';
         userlocation_id        points.id%type;
         order_name             orders.ordername%type := 'order';
+
         no_such_profile_exception exception;
         pragma exception_init (no_such_profile_exception, 100);
     begin
@@ -132,29 +138,40 @@ create or replace package body user_package as
                       on userprofile.userloginid = userlogin.id
         where userlogin.login = 'executor';
 
-        select userprofile.userpointid into userlocation_id from userprofile where userprofile.id = customer_profile_id;
-
+        select userprofile.userpointid
+        into userlocation_id
+        from userprofile
+        where userprofile.id = customer_profile_id;
 
 
         if get_delivery_type = 'courier' then
-            select points.id into start_deliverylocation from points where points.type = 'staff' fetch first 1 rows only;
+            select points.id
+            into start_deliverylocation
+            from points
+            where points.type = 'staff' fetch first 1 rows only;
             insert into orders (customerprofileid, excecutorprofileid, deliverylocationid, status, userlocationid,
-                            orderdate, deliverydate, deliverytype, price)
-        values (customer_profile_id, executor_profile_id, start_deliverylocation, unprocessed_status, userlocation_id,
-                get_data_order, get_delivery_date, get_delivery_type, get_order_price)
-        returning id into order_id;
-            else
-                select points.id into start_deliverylocation from points where points.type = 'staff' and points.point_name = get_delivery_point_pickup;
-                unprocessed_status := 'processed';
-                insert into orders (customerprofileid, excecutorprofileid, deliverylocationid, status, userlocationid,
-                            orderdate, deliverydate, deliverytype, price)
-        values (customer_profile_id, executor_profile_id, start_deliverylocation, unprocessed_status, userlocation_id,
-                get_data_order, get_delivery_date, get_delivery_type, get_order_price)
-        returning id into order_id;
+                                orderdate, deliverydate, deliverytype, price)
+            values (customer_profile_id, executor_profile_id, start_deliverylocation, unprocessed_status,
+                    userlocation_id,
+                    get_data_order, get_delivery_date, get_delivery_type, get_order_price)
+            returning id into order_id;
+        else
+            select points.id
+            into start_deliverylocation
+            from points
+            where points.type = 'staff'
+              and points.point_name = get_delivery_point_pickup;
+            unprocessed_status := 'processed';
+            insert into orders (customerprofileid, excecutorprofileid, deliverylocationid, status, userlocationid,
+                                orderdate, deliverydate, deliverytype, price)
+            values (customer_profile_id, executor_profile_id, start_deliverylocation, unprocessed_status,
+                    userlocation_id,
+                    get_data_order, get_delivery_date, get_delivery_type, get_order_price)
+            returning id into order_id;
         end if;
 
         order_name := 'order_' || order_id;
-        update orders set ORDERNAME= order_name where orders.id = order_id;-- into orders(ordername) values (order_name);
+        update orders set ORDERNAME= order_name where orders.id = order_id;
         commit;
 
         select goods.id into good_id from goods where goods.name = good_name;
@@ -164,7 +181,9 @@ create or replace package body user_package as
     exception
         when no_such_profile_exception then
             rollback;
-            raise no_such_profile_exception;
+            raise_application_error(-20003, 'Such profile does not exist');
+        when dup_val_on_index then rollback;
+        raise_application_error(-20002, 'Such order already exist');
         when others then
             rollback;
             raise_application_error(-20001, sqlerrm);
@@ -179,8 +198,8 @@ create or replace package body user_package as
         open orders_cursor for select o1.ordername          as order_name,
                                       o1.orderdate          as order_date,
                                       o1.deliverydate       as delivery_date,
-                                      o1.status       as order_status,
-                                      o1.price       as order_price,
+                                      o1.status             as order_status,
+                                      o1.price              as order_price,
                                       o1.DELIVERYTYPE       as delivery_type,
                                       goods.name            as good_name,
                                       userlogin.login       as customer_login,
@@ -247,21 +266,6 @@ create or replace package body user_package as
         return history_cursor;
     end get_history_by_login;
 
-    --get good id не нужно
-    function get_good_id(good_name goods.name%type, good_description goods.description%type,
-                         good_price goods.price%type) return goods.id%type
-        is
-        good_id goods.id%type;
-    begin
-        select goods.id
-        into good_id
-        from goods
-        where name = good_name
-          and description = good_description
-          and price = good_price;
-        return good_id;
-    end;
-
     --get all goods
     function get_all_goods return sys_refcursor
         is
@@ -279,16 +283,19 @@ create or replace package body user_package as
         open cursor_good for select * from goods where goods.name = good_name;
         return cursor_good;
     exception
-        when no_data_found then
-            raise no_data_found;
+        when no_data_found then raise_application_error(-20001, 'Such good does not exist');
     end;
 
     --delete order by id
     procedure delete_order_by_name(order_name orders.ordername%type)
         is
+        order_id orders.id%type;
     begin
+        select orders.id into order_id from orders where orders.ORDERNAME = order_name;
         delete from orders where orders.ordername = order_name;
         commit;
+    exception
+        when no_data_found then raise_application_error(-20001, 'Such order does not exist');
     end delete_order_by_name;
 
     --add review
@@ -296,6 +303,7 @@ create or replace package body user_package as
                          get_login userlogin.login%type)
         is
         userprofile_id userprofile.id%type;
+
     begin
         select userprofile.id
         into userprofile_id
@@ -310,9 +318,9 @@ create or replace package body user_package as
     exception
         when no_data_found then
             rollback;
-            raise no_data_found;
-         when others then
-             rollback;
+            raise_application_error(-20002, 'Such profile does not exist');
+        when others then
+            rollback;
             raise_application_error(-20001, sqlerrm);
     end add_review;
 end user_package;

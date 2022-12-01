@@ -37,7 +37,8 @@ create or replace package admin_package is
     --change order executor and delivery location
     procedure update_order_executor_deliverypoint(order_name orders.ordername%type,
                                                   order_executor_login userlogin.login%type,
-                                                  deliverypoint_name points.point_name%type, get_order_price orders.price%type);
+                                                  deliverypoint_name points.point_name%type,
+                                                  get_order_price orders.price%type);
     ------------support functions-----------------
     function encrypt_password(password varchar2) return userlogin.password%type;
     function dencrypt_password(password_hash varchar2) return varchar2;
@@ -62,27 +63,17 @@ create or replace package body admin_package is
                                                    join userprofile on ORDERS.EXCECUTORPROFILEID = USERPROFILE.ID
                                                    join userlogin ul1
                                                         on ul1.id = userprofile.USERLOGINID
-                                          where
-                                             ul1.login != 'executor'
+                                          where ul1.login != 'executor'
                                             and ul1.id = ul2.id) as orders_count
-                                  from userlogin ul2 join userprofile on ul2.id = userprofile.userloginid
+                                  from userlogin ul2
+                                           join userprofile on ul2.id = userprofile.userloginid
                                   where ul2.role = 'staff'
-                                     and USERPROFILE.USERPOINTID = point_id
+                                    and USERPROFILE.USERPOINTID = point_id
                                     and ul2.login != 'executor';
-        /*fetch executors_cursor into executor_login;
-        while executors_cursor%found loop
-            fetch executors_cursor into executor_login;
-            dbms_output.put_line(executor_login);
-        end loop;
-        if executors_cursor%rowcount = 0 then
-            raise no_such_executors;
-        end if;*/
         return executors_cursor;
     exception
         when no_data_found then
-            raise no_data_found;
-        /*    when no_such_executors then
-                raise no_data_found;*/
+             raise_application_error(-20001, 'Such delivery point does not exist');
         when others then
             raise_application_error(-20000, 'get_executors_by_point_name error');
     end;
@@ -98,7 +89,7 @@ create or replace package body admin_package is
         commit;
     exception
         when no_data_found then
-            raise no_data_found;
+           raise_application_error(-20002, 'Such good does not exist');
         when others then
             raise_application_error(-20001, 'Error in delete_good_by_name');
     end;
@@ -133,6 +124,9 @@ create or replace package body admin_package is
         password_hash nvarchar2(200);
         userlogin_id  userlogin.id%type;
         userpoint_id  points.id%type;
+
+        fk_exception exception;
+        pragma exception_init (fk_exception, -2291);
     begin
         password_hash := encrypt_password(password);
         insert into userlogin (login, password, role) values (get_login, password_hash, get_role);
@@ -144,7 +138,10 @@ create or replace package body admin_package is
         commit;
     exception
         when no_data_found then rollback; raise no_data_found;
-        when others then rollback; raise_application_error(-20001, sqlerrm);
+        when dup_val_on_index then rollback; raise_application_error(-20002, 'Such login or email already exists');
+        when fk_exception then rollback; raise_application_error(-20003, 'Such login do not exist');
+        when others then rollback;
+        raise_application_error(-20001, sqlerrm);
     end register_user;
 
     --authorisation accaunt
@@ -168,22 +165,12 @@ create or replace package body admin_package is
         end if;
     exception
         when no_such_profile_exception then
-            raise no_such_profile_exception;
+            raise_application_error(-20002, 'Such login does not exist');
         when others then
             raise_application_error(-20001, sqlerrm);
     end authorisation;
 
-
-
-
- /*(select count(*)
-                                                      from userprofile
-                                                               join points p1
-                                                                    on userprofile.USERPOINTID = p1.id
-                                                               join userlogin on
-                                                          userprofile.USERLOGINID = userlogin.id
-                                                      where userlogin.role= 'staff' and p1.id = p2.id)  as staff_count*/
-    --add good
+--add good
     procedure add_good(good_name goods.name%type,
                        good_description goods.description%type,
                        good_price goods.price%type)
@@ -192,6 +179,8 @@ create or replace package body admin_package is
         insert into goods (name, description, price)
         values (good_name, good_description, good_price);
         commit;
+    exception
+        when dup_val_on_index then rollback; raise_application_error(-20002, 'Such good name already exists');
     end add_good;
 
     --add goodstoorder
@@ -210,8 +199,8 @@ create or replace package body admin_package is
         open unprocessed_orders_cursor for select o1.ordername          as order_name,
                                                   o1.orderdate          as order_date,
                                                   o1.deliverydate       as delivery_date,
-                                                  o1.status       as order_status,
-                                                  o1.price       as order_price,
+                                                  o1.status             as order_status,
+                                                  o1.price              as order_price,
                                                   o1.DELIVERYTYPE       as delivery_type,
                                                   g.name                as good_name,
                                                   userlogin.login       as executor_login,
@@ -241,6 +230,7 @@ create or replace package body admin_package is
                                            where o1.status = 'unprocessed';
         return unprocessed_orders_cursor;
     end;
+
     procedure update_order_executor_deliverypoint(order_name orders.ordername%type,
                                                   order_executor_login userlogin.login%type,
                                                   deliverypoint_name points.point_name%type,
@@ -248,6 +238,10 @@ create or replace package body admin_package is
         is
         order_executor_id orders.excecutorprofileid%type;
         deliverypoint_id  orders.DELIVERYLOCATIONID%type;
+
+        fk_exception exception;
+        pragma exception_init (fk_exception, -2291);
+
     begin
         select userprofile.id
         into order_executor_id
@@ -268,6 +262,7 @@ create or replace package body admin_package is
         commit;
     exception
         when no_data_found then raise no_data_found;
+        when fk_exception then rollback; raise_application_error(-20002, 'Delivery point or executor profile does not exist');
         when others then raise_application_error(-20001, sqlerrm);
     end update_order_executor_deliverypoint;
 

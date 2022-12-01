@@ -71,24 +71,12 @@ begin
         end loop;
         end;
 
---test get good by is
 declare
-good_id goods.id%type := 'EE2246073F5B0196E053020014AC2625';
-    get_good goods%rowtype;
+    userprofile_id userprofile.id%type;
+     no_such_profile_exception exception;
+        pragma exception_init (no_such_profile_exception, 100);
     begin
-    get_good := USER_PACKAGE.GET_GOOD_BY_ID('EE2246073F5B0196E053020014AC2625');
-    DBMS_OUTPUT.PUT_LINE(get_good.NAME);
-        end;
-
-declare
-    cur sys_refcursor;
-good_id goods.id%type := 'EE2246073F5B0196E053020014AC2625';
-    get_good goods%rowtype;
-    begin
-    cur := USER_PACKAGE.GET_GOOD_BY_ID( 'EE2246073F5B0196E053020014AC2625');
-    --get_good := USER_PACKAGE.GET_GOOD_BY_ID(1234);
-    fetch cur into get_good;
-    DBMS_OUTPUT.PUT_LINE(get_good.NAME);
-        end;
-
-
+    select userprofile.id into userprofile_id from userprofile join userlogin on userprofile.USERLOGINID = userlogin.id
+    where userlogin.login = '';
+    exception when no_such_profile_exception then dbms_output.put_line('error');
+end;

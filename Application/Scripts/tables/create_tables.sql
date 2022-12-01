@@ -7,24 +7,22 @@ drop table Reviews;
 
 drop table Orders;
 drop table GoodsToOrder;
---drop table Links; droped
 drop table History;
 drop table Points;
 ---drop tables---
 CREATE TABLE UserLogin(
     ID RAW(32) DEFAULT SYS_GUID(),
-    LOGIN NVARCHAR2(20) default null,
+    LOGIN NVARCHAR2(20) default null unique,
     PASSWORD NVARCHAR2(200) default null,
     ROLE NVARCHAR2(5) default 'user',
     CONSTRAINT PK_USERLOGIN_ID PRIMARY KEY(ID),
     CONSTRAINT CHECK_USERLOGIN_ROLE CHECK(ROLE like 'admin' OR ROLE like 'user' OR ROLE like 'staff')
 );
-alter table UserLogin add constraint UserLogin_Unique_Login unique(Login);
 
 
 CREATE TABLE UserProfile(
     ID RAW(32) DEFAULT SYS_GUID(),
-    EMAIL NVARCHAR2(50) default null,
+    EMAIL NVARCHAR2(50) default null unique,
     USERLOGINID RAW(32) DEFAULT SYS_GUID(),
     USERPOINTID RAW(32) DEFAULT SYS_GUID(),
     CONSTRAINT PK_USERPROFILE_ID primary key(ID),
@@ -63,14 +61,14 @@ CREATE TABLE POINTS
 
 SELECT ROAD FROM ROADS  where sdo_relate(roads.road, 'mask=anyinteract') = 'TRUE';
 
-CREATE TABLE Links(
+/*CREATE TABLE Links(
     ID RAW(32) DEFAULT SYS_GUID(),
     STARTPOINTID RAW(32) DEFAULT SYS_GUID(),
     ENDPOINTID RAW(32) DEFAULT SYS_GUID(),
     CONSTRAINT PK_LINKS_ID primary key (ID),
     CONSTRAINT FK_LINKS_ENDPOINTID foreign key (ENDPOINTID) references POINTS(ID),
     CONSTRAINT FK_LINKS_STARTPOINTID foreign key (STARTPOINTID) references POINTS(ID)
-);
+);*/
 
 CREATE TABLE GoodsToOrder(
     ORDERID RAW(32) DEFAULT SYS_GUID(),
@@ -93,8 +91,8 @@ CREATE TABLE Orders(
     Price NUMBER(5,2),
     CONSTRAINT CHECK_ORDERS_DeliveryType CHECK(DeliveryType like 'courier' OR DeliveryType like 'pickup'),
     CONSTRAINT PK_ORDERS_ID primary key(ID),
-    CONSTRAINT FK_ORDERS_CUSTOMERPROFILEID foreign key (CUSTOMERPROFILEID) references UserProfile(ID),
-    CONSTRAINT FK_ORDERS_EXCECUTORPROFILEID foreign key (EXCECUTORPROFILEID) references UserProfile(ID),
+    CONSTRAINT FK_ORDERS_CUSTOMERPROFILEID foreign key (CUSTOMERPROFILEID) references UserProfile(ID) on delete cascade,
+    CONSTRAINT FK_ORDERS_EXCECUTORPROFILEID foreign key (EXCECUTORPROFILEID) references UserProfile(ID) on delete set null,
     CONSTRAINT FK_ORDERS_USERLCATIONID foreign key (USERLOCATIONID) references POINTS(ID),
     CONSTRAINT FK_ORDERS_DELIVERYLOCATIONID foreign key (DELIVERYLOCATIONID) references POINTS(ID),
     CONSTRAINT CHECK_ORDERS_STATUS CHECK(STATUS like 'unprocessed' OR STATUS like 'processed' OR STATUS like 'executed')
