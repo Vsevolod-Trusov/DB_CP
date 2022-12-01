@@ -54,9 +54,9 @@ public class AdminController {
     }
     @PostMapping("/registration")
     public ResponseEntity<String> registration(@RequestBody UserLogin userLogin) throws SuchProfileLoginExistsException {
-        adminService.registerUserNote(userLogin.getLogin(), userLogin.getPassword(),
-                userLogin.getRole(), userLogin.getEmail(), userLogin.getPointName());
-        return ResponseEntity.ok("User "+ userLogin.getLogin()+" registered");
+            adminService.registerUserNote(userLogin.getLogin(), userLogin.getPassword(),
+                    userLogin.getRole(), userLogin.getEmail(), userLogin.getPointName());
+            return ResponseEntity.ok("User "+ userLogin.getLogin()+" registered");
     }
 
     @PostMapping("/authorization")

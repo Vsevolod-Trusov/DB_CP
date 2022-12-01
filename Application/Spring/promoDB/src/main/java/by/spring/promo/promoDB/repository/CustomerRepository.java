@@ -33,7 +33,6 @@ public class CustomerRepository {
 
     //обработчик добавлен
     public void addReview(Review getReview) throws DataNotFoundException, SQLException {
-       try{
            SimpleJdbcCall insertReview = new SimpleJdbcCall(customerJdbcTemplate)
                    .withSchemaName("ADMIN")
                    .withCatalogName("user_package")
@@ -46,11 +45,6 @@ public class CustomerRepository {
                    .addValue("get_estimation", getReview.getEstimation())
                    .addValue("get_login", getReview.getReviewerLogin());;
            insertReview.execute(in);
-       }catch(DataIntegrityViolationException notFoundexception){
-           throw new DataNotFoundException("Such login: "+getReview.getReviewerLogin()+" do not exist");
-       }catch(Exception exception){
-           throw new SQLException("Adding review failed");
-       }
     }
 
     public List findAllGoods() {
@@ -64,7 +58,6 @@ public class CustomerRepository {
     }
 
     public Good findGoodByName(String getGoodName) throws DataNotFoundException {
-        try{
             SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(customerJdbcTemplate)
                     .withSchemaName("ADMIN")
                     .withCatalogName("user_package")
@@ -75,16 +68,11 @@ public class CustomerRepository {
             List goods = simpleJdbcCall.executeFunction(List.class, in);
 
             return (Good) goods.get(0);
-        }
-        catch(DataIntegrityViolationException dataNotFoundException)
-        {
-            throw new DataNotFoundException("Good with name: "+getGoodName+" do not exist");
-        }
+
     }
 
     //обработчик добавлен
     public String addOrder(Order getOrder) throws SQLException {
-        try{
             SimpleJdbcCall insertOrder = new SimpleJdbcCall(customerJdbcTemplate)
                     .withSchemaName("ADMIN")
                     .withCatalogName("user_package")
@@ -105,11 +93,7 @@ public class CustomerRepository {
                     .addValue("get_delivery_point_pickup", getOrder.getDeliveryAddress());
             String order = insertOrder.executeFunction(String.class, in);
             return order;
-        }catch(DataIntegrityViolationException dataNotFound){
-            throw new DataNotFoundException("Wrong input data");
-        }catch(Exception exception){
-            throw new SQLException("Adding order failed");
-        }
+
     }
 
     public List getNotExecutedOrdersByLogin(String getLogin){

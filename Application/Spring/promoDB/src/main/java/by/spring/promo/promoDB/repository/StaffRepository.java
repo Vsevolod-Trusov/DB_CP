@@ -45,7 +45,6 @@ public class StaffRepository {
     @Transactional
     @ExceptionHandler
     public void updateOrderStatus(String orderName, String status) throws SQLException {
-        try{
             SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(staffJdbcTemplate)
                     .withSchemaName("ADMIN")
                     .withCatalogName("staff_package")
@@ -55,13 +54,9 @@ public class StaffRepository {
             SqlParameterSource in = new MapSqlParameterSource().addValue("order_name", orderName)
                     .addValue("get_status", status);
             simpleJdbcCall.execute(in);
-        }catch(Exception exception){
-            throw new SQLException("Updating order failed");
-        }
     }
 
     public List getOrdersByStaffLogin(String staffLogin) throws SQLException {
-        try {
             SimpleJdbcCall getOrdersByStaffLogin = new SimpleJdbcCall(staffJdbcTemplate)
                     .withSchemaName("ADMIN")
                     .withCatalogName("staff_package")
@@ -71,10 +66,5 @@ public class StaffRepository {
             SqlParameterSource in = new MapSqlParameterSource().addValue("staff_login", staffLogin);
             List processedOrdersToStaff = getOrdersByStaffLogin.executeFunction(List.class, in);
             return processedOrdersToStaff;
-        } catch (DataIntegrityViolationException notFoundExceptioin) {
-            throw new DataNotFoundException("No orders found for staff with login: " + staffLogin);
-        }catch (Exception e){
-            throw new SQLException("Getting orders by staff login failed");
-        }
     }
 }
