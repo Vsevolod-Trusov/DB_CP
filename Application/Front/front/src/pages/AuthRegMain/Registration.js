@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
 import Form from 'react-bootstrap/Form';
-import "bootstrap/dist/css/bootstrap.min.css";
 import Navbar from "../../components/Navbar";
 
 export default function Registration() {
@@ -80,7 +79,7 @@ export default function Registration() {
             setShowError("Wrong email")
             return false
         }
-        if(pointName.role <=0 ){
+        if(user.role.length <=0 ){
             setShowError("Role is empty")
             return false
         }

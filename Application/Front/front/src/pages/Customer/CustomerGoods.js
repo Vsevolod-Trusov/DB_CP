@@ -1,42 +1,56 @@
-import React, {useEffect} from "react";
-import {Link, Navigate, Outlet, Route, Routes} from "react-router-dom";
-import CustomerOrderForm from "./CustomerOrderForm";
+import React, {useEffect, useState} from "react";
+import {Link} from "react-router-dom";
 
 export default function CustomerGoods() {
-    const [goodsList , setGoodsList] = React.useState([]);
+    const [goodsList, setGoodsList] = React.useState([]);
+    const goodsPerTableList = 7
+    const [indexOfFirstGood, setIndexOfFirstGood]= useState(1)
 
     useEffect(() => {
-        loadGoods()
+        loadGoods(indexOfFirstGood, goodsPerTableList-1);
     }, []);
 
-    const loadGoods = async () => {
-        await fetch("http://localhost:8080/api/user/goods", {
+
+    const loadGoods = async (startIndexGood, interval) => {
+        await fetch(`http://localhost:8080/api/user/goods/${startIndexGood}/${interval}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json'
             }
         })
             .then(response => {
-
-                if (response.status === 200) {
+                if (response.ok) {
                     return response.json()
-                }
-                throw new Error(`${response.status}: ${response.text()}`)
+                }else return response.json()
             }).then(data => {
-                setGoodsList([...data]);
-                console.log(goodsList)
-            }).catch(error => {
-                alert(error);
+                if(data.message){
+                    setIndexOfFirstGood(0)
+                    loadGoods(1, goodsPerTableList-1)
+                }else setGoodsList([...data]);
             })
     };
 
+    const previousTableList=()=>{
+            setIndexOfFirstGood(indexOfFirstGood - goodsPerTableList)
+        loadGoods(indexOfFirstGood - goodsPerTableList, goodsPerTableList-1);
+    }
 
-
+    const nextTableList=()=>{
+            setIndexOfFirstGood(indexOfFirstGood + goodsPerTableList)
+            loadGoods(indexOfFirstGood + goodsPerTableList, goodsPerTableList-1);
+    }
 
     return (
         <div className="container">
-            Customer Goods table
             <div className="py-4">
+               <div className="container" style={{paddingLeft:"2%", paddingRight:"2%", paddingBottom:"1%"}}>
+                   <button className="btn btn-primary offset-0"
+                           disabled={(indexOfFirstGood - goodsPerTableList)<=0}
+                           onClick={() => previousTableList()}
+                   >Back
+                   </button>
+                   <button className="btn btn-primary offset-9" onClick={()=>nextTableList()} >Next</button>
+               </div>
                 <table className="table border shadow">
                     <thead>
                     <tr>
