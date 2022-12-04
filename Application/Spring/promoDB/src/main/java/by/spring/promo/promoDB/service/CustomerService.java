@@ -32,8 +32,8 @@ public class CustomerService {
     }
 
     @Transactional
-    public List findAllGoods() {
-        return customerRepository.findAllGoods();
+    public List findAllGoods(int startValue, int endValue) {
+        return customerRepository.findAllGoods(startValue, endValue);
     }
 
     @Transactional

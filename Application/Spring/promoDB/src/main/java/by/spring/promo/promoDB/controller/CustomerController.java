@@ -46,9 +46,9 @@ public class CustomerController {
         return ResponseEntity.ok("Review added successfully");
     }
 
-    @GetMapping("/goods")
-    public ResponseEntity<List> getGoods(){
-        return ResponseEntity.ok(customerService.findAllGoods());
+    @GetMapping("/goods/{startValue}/{interval}")
+    public ResponseEntity<List> getGoods(@PathVariable int startValue, @PathVariable int interval) {
+        return ResponseEntity.ok(customerService.findAllGoods(startValue, startValue+interval));
     }
 
     @GetMapping("/good/{goodName}")
