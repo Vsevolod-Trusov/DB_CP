@@ -72,7 +72,7 @@ CREATE TABLE GoodsToOrder(
     ORDERID RAW(32) DEFAULT SYS_GUID(),
     GOODSID RAW(32) DEFAULT SYS_GUID(),
     CONSTRAINT FK_GOODSTOORDER_ORDERID foreign key (ORDERID) references Orders(ID) on delete cascade,
-    CONSTRAINT FK_GOODSTOORDER_GOODSID foreign key (GOODSID) references Goods(ID)
+    CONSTRAINT FK_GOODSTOORDER_GOODSID foreign key (GOODSID) references Goods(ID) on delete cascade
 );
 
 CREATE TABLE Orders(

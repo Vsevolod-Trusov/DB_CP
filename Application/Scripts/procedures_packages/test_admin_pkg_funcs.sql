@@ -80,3 +80,10 @@ end;
 /*SELECT SDO_GCDR.GEOCODE_AS_GEOMETRY('ADMIN',
 SDO_KEYWORDARRAY('1 Carlton B Goodlett Pl', 'San Francisco, CA  94102'),
 'US') FROM DUAL;*/
+
+--test delete good
+begin
+    admin_package.delete_good_by_name('item1');
+end;
+select * from goods;
+delete from goods where name = 'item1';
