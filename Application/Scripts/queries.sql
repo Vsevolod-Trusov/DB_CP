@@ -1,11 +1,8 @@
 delete from userlogin;
 delete from userprofile;
-delete from deliverypoints;
-delete from userpoints;
 delete from goods;
 delete  from goodstoorder;
 delete  from history;
-delete  from links;
 delete  from roads;
 delete  from shapes;
 delete  from reviews;

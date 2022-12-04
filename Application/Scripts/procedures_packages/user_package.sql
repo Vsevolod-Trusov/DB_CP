@@ -1,4 +1,6 @@
 create or replace package user_package as
+    --get pagination goods between start value and end value
+    function get_pagination_goods(start_value number, end_value number) return sys_refcursor;
     --get executor login by order id
     function get_executor_login_by_order_id(order_id orders.id%type) return userlogin.login%type;
     --get routes by user login
@@ -36,23 +38,55 @@ create or replace package user_package as
 end user_package;
 
 create or replace package body user_package as
-    --get executor login by order id
+    --get pagination goods between start value and end value
+    function get_pagination_goods(start_value number, end_value number) return sys_refcursor
+        is
+        get_pagination_goods_cursor sys_refcursor;
+        row_count                   number;
+        wrong_input_data exception;
+    begin
+        select count(*) into row_count from goods;
+        if start_value > row_count then
+            raise wrong_input_data;
+        end if;
+
+        if start_value < 0 or end_value < 0 then
+            raise wrong_input_data;
+        elsif start_value > end_value then
+            raise wrong_input_data;
+        end if;
+
+        open get_pagination_goods_cursor for
+            select *
+            from (select goods.*,
+                         ROWNUM rnum
+                  from (select * from goods) goods
+                  where ROWNUM <= end_value)
+            where rnum >= start_value;
+        return get_pagination_goods_cursor;
+    exception
+        when wrong_input_data then
+            raise_application_error(-20001, 'Wrong input data');
+    end get_pagination_goods;
+--get executor login by order id
     function get_executor_login_by_order_id(order_id orders.id%type) return userlogin.login%type
         is
         executor_login userlogin.login%type;
     begin
-        select userlogin.login into executor_login
-         from orders o2
-                  join userprofile
-                       on o2.excecutorprofileid = userprofile.id
-                  join
-              userlogin on userprofile.userloginid = userlogin.id
-         where o2.id = order_id;
+        select userlogin.login
+        into executor_login
+        from orders o2
+                 join userprofile
+                      on o2.excecutorprofileid = userprofile.id
+                 join
+             userlogin on userprofile.userloginid = userlogin.id
+        where o2.id = order_id;
         return executor_login;
-        exception when no_data_found then raise_application_error(-20001, 'No such order');
+    exception
+        when no_data_found then raise_application_error(-20001, 'No such order');
     end;
 
-    --get routes by user login
+--get routes by user login
     function get_routes_by_user_login(user_login userlogin.login%type) return sys_refcursor
         is
         routes_by_login sys_refcursor;
@@ -72,7 +106,7 @@ create or replace package body user_package as
             raise_application_error(-20001, 'Such user profile does not exist');
         when others then raise_application_error(-20000, 'Error in get_routes_by_user_login');
     end;
-    --get analysis
+--get analysis
     function get_route_length_analysis(customer_point_name points.point_name%type) return sys_refcursor
         is
         analysys_route_length_cursor sys_refcursor;
@@ -96,7 +130,7 @@ create or replace package body user_package as
         when no_data_found then raise_application_error(-20001, 'Such customer point does not exist');
     end;
 
-    --get_distance_line
+--get_distance_line
     function get_distance_between_deliverypoint_customer(delivery_point_name POINTS.POINT_NAME%type,
                                                          customer_location_name POINTS.POINT_NAME%type) return number
         is
@@ -123,7 +157,7 @@ create or replace package body user_package as
         return -1;
     end get_distance_between_deliverypoint_customer;
 
-    --add order
+--add order
     function add_order(customer_login userlogin.login%type, good_name goods.name%type,
                        get_data_order date default sysdate, get_delivery_date date,
                        get_delivery_type orders.deliverytype%type,
@@ -208,7 +242,7 @@ create or replace package body user_package as
     end add_order;
 
 
-    --get orders by login
+--get orders by login
     function get_orders_not_executed_by_login(user_login userlogin.login%type) return sys_refcursor
         is
         orders_cursor sys_refcursor;
@@ -220,7 +254,7 @@ create or replace package body user_package as
         return orders_cursor;
     end get_orders_not_executed_by_login;
 
-    --add history
+--add history
     procedure add_history(order_id orders.id%type,
                           customer_login userlogin.login%type,
                           order_name orders.ordername%type,
@@ -240,17 +274,18 @@ create or replace package body user_package as
         commit;
     end add_history;
 
-    --get customer history
+--get customer history
     function get_history_by_login(customer_login userlogin.login%type) return sys_refcursor
         is
         history_cursor sys_refcursor;
     begin
-        open history_cursor for select * from history_view
+        open history_cursor for select *
+                                from history_view
                                 where history_view.user_login = customer_login;
         return history_cursor;
     end get_history_by_login;
 
-    --get all goods
+--get all goods
     function get_all_goods return sys_refcursor
         is
         goods sys_refcursor;
@@ -259,7 +294,7 @@ create or replace package body user_package as
         return goods;
     end get_all_goods;
 
-    --get good by name
+--get good by name
     function get_good_by_name(good_name goods.name%type) return sys_refcursor
         is
         cursor_good sys_refcursor;
@@ -270,7 +305,7 @@ create or replace package body user_package as
         when no_data_found then raise_application_error(-20001, 'Such good does not exist');
     end;
 
-    --delete order by id
+--delete order by id
     procedure delete_order_by_name(order_name orders.ordername%type)
         is
         order_id orders.id%type;
@@ -282,7 +317,7 @@ create or replace package body user_package as
         when no_data_found then raise_application_error(-20001, 'Such order does not exist');
     end delete_order_by_name;
 
-    --add review
+--add review
     procedure add_review(get_content reviews.content%type, get_estimation reviews.estimation%type,
                          get_login userlogin.login%type)
         is
