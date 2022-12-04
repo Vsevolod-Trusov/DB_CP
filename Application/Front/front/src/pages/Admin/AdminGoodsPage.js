@@ -25,7 +25,7 @@ export default function AdminGoodsPage() {
                 }else return response.json()
             }).then(data => {
                 if(data.message){
-                    setIndexOfFirstGood(0)
+                    setIndexOfFirstGood(1)
                     loadGoods(1, goodsPerTableList-1)
                 }else setGoodsList([...data]);
             })
@@ -43,8 +43,8 @@ export default function AdminGoodsPage() {
 
                 throw new Error(`${response.status}: Error while deleting good`)
             }).then(data => {
-                loadGoods()
                 console.log(data)
+                loadGoods(indexOfFirstGood, goodsPerTableList-1)
             }).catch(error => {
                 alert(error);
             })
@@ -67,14 +67,14 @@ export default function AdminGoodsPage() {
         <div>
             <div className="container">
                 <div className="py-4">
-                    <div className="container" style={{paddingLeft: "2%", paddingRight: "2%", paddingBottom: "1%"}}>
+                    <div className="container" style={{paddingLeft: "4%", paddingRight: "9%", paddingBottom: "1%"}}>
                         <button className="btn btn-primary me-1"
                                 disabled={(indexOfFirstGood - goodsPerTableList) <= 0}
                                 onClick={() => previousTableList()}
                         >Back
                         </button>
                         <button className="btn btn-primary " onClick={() => nextTableList()}>Next</button>
-                        <button className="btn btn-primary mb-2 offset-8" onClick={() => addGood()}>Add Good</button>
+                        <button className="btn btn-primary mb-2 offset-9" onClick={() => addGood()}>Add Good</button>
                     </div>
                     <table className="table border shadow">
                         <thead>

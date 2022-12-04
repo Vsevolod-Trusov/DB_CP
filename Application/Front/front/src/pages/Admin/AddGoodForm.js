@@ -22,6 +22,12 @@ export default function AddGoodForm() {
             setShowError("Wrong name. Max length is 20 characters")
             return false
         }
+
+        if (+price <= 0) {
+            setShowError("Wrong price value.")
+            return false
+        }
+
         if (description.length <= 0) {
             setShowError("Description is empty")
             return false
