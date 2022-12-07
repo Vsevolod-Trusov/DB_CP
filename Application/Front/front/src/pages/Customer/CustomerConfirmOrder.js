@@ -9,6 +9,7 @@ export default function CustomerConfirmOrder() {
 
     const confirmOrder = async (e) => {
         e.preventDefault()
+        console.log(JSON.stringify(order))
         await fetch("http://localhost:8080/api/user/order", {
             method: 'POST',
             headers: {

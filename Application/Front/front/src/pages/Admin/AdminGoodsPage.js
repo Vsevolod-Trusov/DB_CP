@@ -13,6 +13,7 @@ export default function AdminGoodsPage() {
 
 
     const loadGoods = async (startIndexGood, interval) => {
+        console.log(startIndexGood, interval)
         await fetch(`http://localhost:8080/api/user/goods/${startIndexGood}/${interval}`, {
             method: 'GET',
             headers: {
