@@ -1,4 +1,14 @@
 create or replace package user_package as
+    --insert into orders table
+    function insert_into_orders(customer_profile_id orders.customerprofileid%type,
+                                executor_profile_id orders.excecutorprofileid%type,
+                                start_deliverylocation orders.deliverylocationid%type,
+                                status orders.status%type,
+                                userlocation_id orders.userlocationid%type,
+                                get_data_order orders.orderdate%type,
+                                get_delivery_date orders.deliverydate%type,
+                                get_delivery_type orders.deliverytype%type,
+                                get_order_price orders.price%type) return orders.id%type;
     --get pagination goods between start value and end value
     function get_pagination_goods(start_value number, end_value number) return sys_refcursor;
     --get executor login by order id
@@ -157,6 +167,29 @@ create or replace package body user_package as
         return -1;
     end get_distance_between_deliverypoint_customer;
 
+--insert into orders  table
+    function insert_into_orders(customer_profile_id orders.customerprofileid%type,
+                                executor_profile_id orders.excecutorprofileid%type,
+                                start_deliverylocation orders.deliverylocationid%type,
+                                status orders.status%type,
+                                userlocation_id orders.userlocationid%type,
+                                get_data_order orders.orderdate%type,
+                                get_delivery_date orders.deliverydate%type,
+                                get_delivery_type orders.deliverytype%type,
+                                get_order_price orders.price%type) return orders.id%type
+        is
+        order_id orders.id%type;
+    begin
+        insert into orders (customerprofileid, excecutorprofileid, deliverylocationid, status, userlocationid,
+                            orderdate, deliverydate, deliverytype, price)
+        values (customer_profile_id, executor_profile_id, start_deliverylocation, status,
+                userlocation_id,
+                get_data_order, get_delivery_date, get_delivery_type, get_order_price)
+        returning id into order_id;
+        commit;
+        return order_id;
+    end;
+
 --add order
     function add_order(customer_login userlogin.login%type, good_name goods.name%type,
                        get_data_order date default sysdate, get_delivery_date date,
@@ -201,12 +234,10 @@ create or replace package body user_package as
             into start_deliverylocation
             from points
             where points.type = 'staff' fetch first 1 rows only;
-            insert into orders (customerprofileid, excecutorprofileid, deliverylocationid, status, userlocationid,
-                                orderdate, deliverydate, deliverytype, price)
-            values (customer_profile_id, executor_profile_id, start_deliverylocation, unprocessed_status,
-                    userlocation_id,
-                    get_data_order, get_delivery_date, get_delivery_type, get_order_price)
-            returning id into order_id;
+            order_id := insert_into_orders(customer_profile_id, executor_profile_id, start_deliverylocation,
+                                           unprocessed_status,
+                                           userlocation_id,
+                                           get_data_order, get_delivery_date, get_delivery_type, get_order_price);
         else
             select points.id
             into start_deliverylocation
@@ -214,12 +245,10 @@ create or replace package body user_package as
             where points.type = 'staff'
               and points.point_name = get_delivery_point_pickup;
             unprocessed_status := 'processed';
-            insert into orders (customerprofileid, excecutorprofileid, deliverylocationid, status, userlocationid,
-                                orderdate, deliverydate, deliverytype, price)
-            values (customer_profile_id, executor_profile_id, start_deliverylocation, unprocessed_status,
-                    userlocation_id,
-                    get_data_order, get_delivery_date, get_delivery_type, get_order_price)
-            returning id into order_id;
+            order_id := insert_into_orders(customer_profile_id, executor_profile_id, start_deliverylocation,
+                                           unprocessed_status,
+                                           userlocation_id,
+                                           get_data_order, get_delivery_date, get_delivery_type, get_order_price);
         end if;
 
         order_name := 'order_' || order_id;
