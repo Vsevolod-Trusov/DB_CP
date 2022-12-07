@@ -17,7 +17,6 @@ create or replace package body staff_package as
         is
     begin
         update orders set status = get_status where orders.ordername = order_name;
-        update history set status = get_status where history.ordername = order_name;
         commit;
         exception when
             others then rollback; raise_application_error(-20001, 'Updating order failed');

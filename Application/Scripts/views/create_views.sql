@@ -31,7 +31,6 @@ as
 select point_name, type
 from points;
 
-
 --processed_orders
 create or replace view processed_orders_view
 as
@@ -93,7 +92,7 @@ from reviews
 --history_view
 create or replace view history_view as
 select g.name         as name,
-       h.status       as status,
+       o.status       as status,
        o.orderdate    as order_date,
        o.deliverydate as delivery_date,
        ul.login       as user_login
@@ -104,9 +103,7 @@ from orders o
          join goodstoorder gto on o.id = gto.orderid
          join goods g on gto.goodsid = g.id;
 
---history_table_view
-create or replace view history_table_view as
-    select * from history;
+--deleted
 --analysis_route_view
 drop view analysis_route_view;
 create or replace view analysis_route_view

@@ -269,8 +269,8 @@ create or replace package body user_package as
                       on userprofile.userloginid = userlogin.id
         where userlogin.login = customer_login;
 
-        insert into history(orderid, userprofileid, ordername, status)
-        values (order_id, customer_profile_id, order_name, order_status);
+        insert into history(orderid)
+        values (order_id);
         commit;
     end add_history;
 

@@ -9,14 +9,15 @@ drop table Orders;
 drop table GoodsToOrder;
 drop table History;
 drop table Points;
----drop tables---
+---drop tables---`
 CREATE TABLE UserLogin(
     ID RAW(32) DEFAULT SYS_GUID(),
     LOGIN NVARCHAR2(20) default null unique,
     PASSWORD NVARCHAR2(200) default null,
     ROLE NVARCHAR2(5) default 'user',
     CONSTRAINT PK_USERLOGIN_ID PRIMARY KEY(ID),
-    CONSTRAINT CHECK_USERLOGIN_ROLE CHECK(ROLE like 'admin' OR ROLE like 'user' OR ROLE like 'staff')
+    CONSTRAINT CHECK_USERLOGIN_ROLE CHECK(ROLE like 'admin' OR
+                                          ROLE like 'user' OR ROLE like 'staff')
 );
 
 
@@ -29,7 +30,6 @@ CREATE TABLE UserProfile(
     CONSTRAINT FK_USERPROFILE_USERLOGINID foreign key(USERLOGINID) references UserLogin(ID) on delete cascade ,
     constraint FK_USERPROFILE_USERPOINTID foreign key(USERPOINTID) references POINTS(ID)
 );
-
 CREATE TABLE Goods(
     ID RAW(32) DEFAULT SYS_GUID(),
     NAME NVARCHAR2(20) unique,
@@ -45,7 +45,8 @@ CREATE TABLE Reviews(
     ESTIMATION NUMBER,
     USERPROFILEID RAW(32) DEFAULT SYS_GUID(),
     CONSTRAINT PK_REVIEWS_ID primary key (ID),
-    CONSTRAINT FK_REVIEWS_USERPROFILEID foreign key(USERPROFILEID) references UserProfile(ID) on delete cascade
+    CONSTRAINT FK_REVIEWS_USERPROFILEID foreign key(USERPROFILEID)
+        references UserProfile(ID) on delete cascade
 );
 
 
@@ -100,14 +101,9 @@ CREATE TABLE Orders(
 CREATE TABLE History(
     ID RAW(32) DEFAULT SYS_GUID(),
     ORDERID RAW(32) DEFAULT SYS_GUID(),
-    ORDERNAME nvarchar2(100),
-    STATUS NVARCHAR2(12) DEFAULT 'unprocessed',
-    USERPROFILEID RAW(32) DEFAULT SYS_GUID(),
-    CONSTRAINT FK_HISTORY_USERPROFILEID foreign key (USERPROFILEID) references UserProfile(ID) on delete cascade,
     CONSTRAINT PK_HISTORY_ID primary key (ID),
-    CONSTRAINT FK_HISTORY_ORDERID foreign key (ORDERID) references Orders(ID) on delete cascade ,
-    CONSTRAINT CHECK_HISTORY_STATUS CHECK(STATUS like 'unprocessed' OR STATUS like 'processed' OR STATUS like 'executed')
-                    );
+    CONSTRAINT FK_HISTORY_ORDERID foreign key (ORDERID)
+        references Orders(ID) on delete cascade );
 
 
 

@@ -80,3 +80,17 @@ declare
     where userlogin.login = '';
     exception when no_such_profile_exception then dbms_output.put_line('error');
 end;
+
+declare
+    cur_goods sys_refcursor;
+    name goods.name%type;
+begin
+    cur_goods := user_package.get_pagination_goods(1,6);
+    fetch cur_goods into row;
+    while good%found
+    loop
+        dbms_output.put_line(row.id);
+        fetch good into row;
+        end loop;
+        end;
+end;

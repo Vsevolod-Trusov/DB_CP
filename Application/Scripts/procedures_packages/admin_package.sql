@@ -275,8 +275,7 @@ create or replace package body admin_package is
             orders.DELIVERYLOCATIONID = deliverypoint_id,
             orders.price = get_order_price
         where orders.ordername = order_name;
-        update history set history.status = 'processed' where history.ordername = order_name;
-        commit;
+
     exception
         when no_data_found then raise no_data_found;
         when fk_exception then rollback;
@@ -289,14 +288,16 @@ create or replace package body admin_package is
         is
         hash_password userlogin.password%type;
     begin
-        hash_password := utl_encode.text_encode(password, 'AL32UTF8', UTL_ENCODE.BASE64);
+        hash_password := utl_encode.text_encode(password, 'AL32UTF8',
+            UTL_ENCODE.BASE64);
         return hash_password;
     end encrypt_password;
 
     function dencrypt_password(password_hash varchar2) return varchar2
         is
     begin
-        return utl_encode.text_decode(password_hash, 'AL32UTF8', UTL_ENCODE.BASE64);
+        return utl_encode.text_decode(password_hash, 'AL32UTF8',
+            UTL_ENCODE.BASE64);
     end dencrypt_password;
 
 end admin_package;
