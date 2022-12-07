@@ -1,14 +1,17 @@
 create or replace package user_package as
+     --add goodstoorders
+     procedure add_goods_to_order(order_id orders.id%type, good_id goods.id%type);
     --insert into orders table
     function insert_into_orders(customer_profile_id orders.customerprofileid%type,
                                 executor_profile_id orders.excecutorprofileid%type,
                                 start_deliverylocation orders.deliverylocationid%type,
-                                status orders.status%type,
+                                order_status orders.status%type,
                                 userlocation_id orders.userlocationid%type,
                                 get_data_order orders.orderdate%type,
                                 get_delivery_date orders.deliverydate%type,
                                 get_delivery_type orders.deliverytype%type,
-                                get_order_price orders.price%type) return orders.id%type;
+                                get_order_price orders.price%type
+                                ) return orders.id%type;
     --get pagination goods between start value and end value
     function get_pagination_goods(start_value number, end_value number) return sys_refcursor;
     --get executor login by order id
@@ -48,6 +51,13 @@ create or replace package user_package as
 end user_package;
 
 create or replace package body user_package as
+    --add goodstoorder
+    procedure add_goods_to_order(order_id orders.id%type, good_id goods.id%type)
+        is
+    begin
+        insert into goodstoorder values (order_id, good_id);
+        commit;
+    end;
     --get pagination goods between start value and end value
     function get_pagination_goods(start_value number, end_value number) return sys_refcursor
         is
@@ -171,7 +181,7 @@ create or replace package body user_package as
     function insert_into_orders(customer_profile_id orders.customerprofileid%type,
                                 executor_profile_id orders.excecutorprofileid%type,
                                 start_deliverylocation orders.deliverylocationid%type,
-                                status orders.status%type,
+                                order_status orders.status%type,
                                 userlocation_id orders.userlocationid%type,
                                 get_data_order orders.orderdate%type,
                                 get_delivery_date orders.deliverydate%type,
@@ -182,11 +192,10 @@ create or replace package body user_package as
     begin
         insert into orders (customerprofileid, excecutorprofileid, deliverylocationid, status, userlocationid,
                             orderdate, deliverydate, deliverytype, price)
-        values (customer_profile_id, executor_profile_id, start_deliverylocation, status,
+        values (customer_profile_id, executor_profile_id, start_deliverylocation, order_status,
                 userlocation_id,
                 get_data_order, get_delivery_date, get_delivery_type, get_order_price)
         returning id into order_id;
-        commit;
         return order_id;
     end;
 
@@ -256,8 +265,7 @@ create or replace package body user_package as
         commit;
 
         select goods.id into good_id from goods where goods.name = good_name;
-        --user_package.add_history(order_id, customer_login, order_name, unprocessed_status);
-        admin_package.add_goods_to_order(order_id, good_id);
+        user_package.add_goods_to_order(order_id, good_id);
         return order_name;
     exception
         when no_such_profile_exception then

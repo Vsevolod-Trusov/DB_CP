@@ -6,18 +6,7 @@ begin
     distance := user_package.get_distance_between_deliverypoint_customer('asdfgh', 'Беларуская 21');
     dbms_output.put_line(distance);
 end;
---test add order
-declare
-    good_name goods.name%type;
-    good_row goods%rowtype;
-begin
-    select goods.name into good_name from goods fetch first 1 rows only;
 
-dbms_output.put_line(user_package.add_order(
-    'user',
-    good_name,
-    '21.11.2022', '22.11.2022'));
-end;
 declare
     history sys_refcursor;
     good_name goods.name%type;
@@ -36,20 +25,6 @@ begin
         'order_EE2596160F4C0408E053020014AC37D9',
         'unprocessed');
 end;
---test add and then delete order
-declare
-    good_id goods.id%type;
-    good_row goods%rowtype;
-    order_id orders.id%type;
-begin
-    select * into good_row from goods fetch first 1 rows only;
-    good_id := user_package.get_good_id(good_row.name,
-        good_row.description, good_row.price);
-    order_id := user_package.add_order('vsevolod', good_id, '21.11.2022', '22.11.2022');
-dbms_output.put_line(order_id);
-    user_package.delete_order_by_id(order_id);
-    end;
-
 --test add review
 declare
     estimation number := 9;
@@ -94,3 +69,44 @@ begin
         end loop;
         end;
 end;
+
+--test add order and add good to order
+declare
+    order_name orders.ordername%type :='order_EF43821747E4112AE053020014ACAF71';
+
+    cust_login userlogin.login%type := 'user';
+    good_name goods.name%type := 'item8';
+    data_order orders.orderdate%type := sysdate;
+    delivery_date orders.deliverydate%type :=sysdate;
+    get_delivery_type orders.deliverytype%type := 'courier';
+    price orders.price%type := 12.25;
+    get_delivery_point_pickup points.point_name%type := 'Ленина 20';
+
+    good_id goods.id%type;
+begin
+
+order_name:=user_package.add_order(cust_login, good_name,
+                       data_order, delivery_date,
+                       get_delivery_type ,
+                       price,
+                       get_delivery_point_pickup );
+
+dbms_output.put_line(substr(order_name, 7));
+select id into good_id from goods where name = 'item9';
+user_package.ADD_GOODS_TO_ORDER(substr(order_name, 7), good_id);
+end;
+
+--get goods by order id
+declare
+    order_id orders.id%type := 'EF43821747E4112AE053020014ACAF71';
+    begin
+    null;
+end;
+
+select orders.ORDERNAME, count(*) as goods_count from orders join GOODSTOORDER G
+    on ORDERS.ID = G.ORDERID group by orders.ORDERNAME;
+
+select goods.name from goods join goodstoorder on GOODS.ID = GOODSTOORDER.GOODSID
+where GOODSTOORDER.ORDERID = 'EF43821747E4112AE053020014ACAF71';
+
+select * from ORDERS_NOT_EXECUTED_VIEW;

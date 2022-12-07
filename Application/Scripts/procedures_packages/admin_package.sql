@@ -34,8 +34,7 @@ create or replace package admin_package is
                        good_price goods.price%type);
     --delete good by name
     procedure delete_good_by_name(good_name goods.name%type);
-    --add goodstoorders
-    procedure add_goods_to_order(order_id orders.id%type, good_id goods.id%type);
+
 
     --get unprocessed orders
     function get_unprocessed_orders return sys_refcursor;
@@ -231,13 +230,7 @@ create or replace package body admin_package is
         when dup_val_on_index then rollback; raise_application_error(-20002, 'Such good name already exists');
     end add_good;
 
-    --add goodstoorder
-    procedure add_goods_to_order(order_id orders.id%type, good_id goods.id%type)
-        is
-    begin
-        insert into goodstoorder values (order_id, good_id);
-        commit;
-    end;
+
 
     --get unprocessed orders
     function get_unprocessed_orders return sys_refcursor
