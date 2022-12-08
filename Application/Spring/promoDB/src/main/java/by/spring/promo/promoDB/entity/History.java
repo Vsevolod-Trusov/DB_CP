@@ -9,6 +9,7 @@ import java.util.Date;
 @Setter
 public class History {
     private String name;
+    private String orderName;
     private String status;
     private Date deliveryDate;
     private Date orderDate;

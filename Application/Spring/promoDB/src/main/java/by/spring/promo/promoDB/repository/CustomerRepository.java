@@ -17,6 +17,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
@@ -49,7 +50,6 @@ public class CustomerRepository {
     }
 
     public List findAllGoods(int startValue, int endValue) {
-        //TODO: add pagination
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(customerJdbcTemplate)
                 .withSchemaName("ADMIN")
                 .withCatalogName("user_package")
@@ -81,8 +81,25 @@ public class CustomerRepository {
 
     }
 
+    public void insertIntoGoodsToOrder(String orderName, List<String> itemsNamesList ) {
+        SimpleJdbcCall insertGoodsToOrder = new SimpleJdbcCall(customerJdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("user_package")
+                .withProcedureName("add_good_to_order")
+                .declareParameters(new SqlParameter("order_name", Types.NVARCHAR),
+                        new SqlParameter("good_name", Types.NVARCHAR));
+        for (int i = 1; i < itemsNamesList.size(); i++) {
+            SqlParameterSource inParameters = new MapSqlParameterSource()
+                    .addValue("order_name", orderName)
+                    .addValue("good_name", itemsNamesList.get(i));
+            insertGoodsToOrder.execute(inParameters);
+        }
+    }
+
     //обработчик добавлен
     public String addOrder(Order getOrder) throws SQLException {
+        List<String> itemsList = List.of(getOrder.getGoodName().split(", ")).stream().toList();
+
         SimpleJdbcCall insertOrder = new SimpleJdbcCall(customerJdbcTemplate)
                 .withSchemaName("ADMIN")
                 .withCatalogName("user_package")
@@ -95,13 +112,18 @@ public class CustomerRepository {
                         new SqlParameter("get_order_price", Types.DECIMAL),
                         new SqlParameter("get_delivery_point_pickup", Types.NVARCHAR));
         SqlParameterSource in = new MapSqlParameterSource().addValue("customer_login", getOrder.getCustomerLogin())
-                .addValue("good_name", getOrder.getGoodName())
+                .addValue("good_name", itemsList.get(0))
                 .addValue("get_data_order", getOrder.getOrderDate())
                 .addValue("get_delivery_date", getOrder.getDeliveryDate())
                 .addValue("get_delivery_type", getOrder.getDeliveryType())
                 .addValue("get_order_price", getOrder.getPrice())
                 .addValue("get_delivery_point_pickup", getOrder.getDeliveryAddress());
         String order = insertOrder.executeFunction(String.class, in);
+
+        if(itemsList.size() > 1){
+            insertIntoGoodsToOrder(order, itemsList);
+        }
+
         return order;
 
     }
@@ -151,5 +173,14 @@ public class CustomerRepository {
         SqlParameterSource in = new MapSqlParameterSource().addValue("user_login", userLogin);
         List routesList = getRoutes.executeFunction(List.class, in);
         return routesList;
+    }
+
+    public BigDecimal getGoodsRowsCount(){
+        SimpleJdbcCall getRoutes = new SimpleJdbcCall(customerJdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("user_package")
+                .withFunctionName("count_rows_of_goods");
+       BigDecimal count = getRoutes.executeFunction(BigDecimal.class);
+        return count;
     }
 }

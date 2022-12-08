@@ -8,6 +8,7 @@ import by.spring.promo.promoDB.service.CustomerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -54,6 +55,11 @@ public class CustomerController {
     @GetMapping("/good/{goodName}")
     public ResponseEntity<Good> getGood(@PathVariable String goodName) throws DataNotFoundException {
         return ResponseEntity.ok(customerService.findGoodByName(goodName));
+    }
+
+    @GetMapping("/good/count")
+    public ResponseEntity<BigDecimal> getGood() throws DataNotFoundException {
+        return ResponseEntity.ok(customerService.getGoodsRowsCount());
     }
 
     @PostMapping("/order")

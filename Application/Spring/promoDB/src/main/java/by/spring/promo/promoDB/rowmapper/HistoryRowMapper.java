@@ -12,6 +12,7 @@ public class HistoryRowMapper implements RowMapper<History> {
     public History mapRow(ResultSet rs, int rowNum) throws SQLException {
         History history = new History();
         history.setName(rs.getString("NAME"));
+        history.setOrderName(rs.getString("ORDER_NAME"));
         history.setStatus(rs.getString("STATUS"));
         history.setDeliveryDate(rs.getDate("DELIVERY_DATE"));
         history.setOrderDate(rs.getDate("ORDER_DATE"));

@@ -9,6 +9,7 @@ import by.spring.promo.promoDB.rowmapper.GoodRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -53,6 +54,10 @@ public class CustomerService {
     @Transactional
     public List getNotExecutedOrdersByLogin(String login) {
         return customerRepository.getNotExecutedOrdersByLogin(login);
+    }
+
+    public BigDecimal getGoodsRowsCount(){
+        return customerRepository.getGoodsRowsCount();
     }
 
     public List getRoutesByUserLogin(String userLogin) {
