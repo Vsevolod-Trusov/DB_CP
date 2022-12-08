@@ -8,6 +8,36 @@ export default function CustomerHistory() {
         loadHistory()
     }, []);
 
+
+    const changeCollection = (list) =>{
+        let collection = list.reduce((r, a) => {
+
+            r[a.orderName] = r[a.orderName] || [];
+
+            r[a.orderName].push(a);
+
+            return r
+        }, {});
+
+        let result = []
+        let items = ""
+        for(let key in collection){
+            for(let item of collection[key]){
+                items += `${item.name}, `
+            }
+            items = items.substring(0,items.length-2)
+            result.push({
+                orderDate: collection[key][0].orderDate,
+                deliveryDate: collection[key][0].deliveryDate,
+                orderStatus: collection[key][0].status,
+                orderPrice: collection[key][0].orderPrice,
+                goodsName: items,
+            })
+            items = ""
+        }
+        return result
+    }
+
     const loadHistory = async () => {
         await fetch(`http://localhost:8080/api/user/history/${window.sessionStorage.getItem("customer_login")}`, {
             method: 'GET',
@@ -22,8 +52,7 @@ export default function CustomerHistory() {
                 }
                 throw new Error(`${response.status}: ${response.text()}`)
             }).then(data => {
-                setHistoryList([...data]);
-                console.log(historyList)
+                setHistoryList([...changeCollection(data)]);
             }).catch(error => {
                 alert(error);
             })
@@ -31,12 +60,11 @@ export default function CustomerHistory() {
 
     return (
         <div className="container">
-            Customer History table
             <div className="py-4">
                 <table className="table border shadow">
                     <thead>
                     <tr>
-                        <th scope="col" className="text-center">Name</th>
+                        <th scope="col" className="text-center w-25">Name</th>
                         <th scope="col" className="text-center">Status</th>
                             <th scope="col" className="text-center">Delivery Date</th>
                             <th scope="col" className="text-center">Order Date</th>
@@ -45,8 +73,8 @@ export default function CustomerHistory() {
                     <tbody>
                     {historyList.map((good, index) => (
                         <tr key={index}>
-                            <td className="text-center">{good.name}</td>
-                            <td className="text-center">{good.status}</td>
+                            <td className="text-center">{good.goodsName}</td>
+                            <td className="text-center">{good.orderStatus}</td>
                             <td className="text-center">{good.deliveryDate}</td>
                             <td className="text-center">{good.orderDate}</td>
                         </tr>

@@ -9,6 +9,36 @@ export default function StaffOrders() {
         loadOrders()
     }, []);
 
+    const changeCollection = (list) =>{
+        let collection = list.reduce((r, a) => {
+
+            r[a.orderName] = r[a.orderName] || [];
+
+            r[a.orderName].push(a);
+
+            return r
+        }, {});
+
+        let result = []
+        let items = ""
+        for(let key in collection){
+            for(let item of collection[key]){
+                items += `${item.goodName}, `
+            }
+            items = items.substring(0,items.length-2)
+            result.push({
+                orderName: key,
+                deliveryDate: collection[key][0].deliveryDate,
+                goodsName: items,
+                customerLogin: collection[key][0].customerLogin,
+                userAddress: collection[key][0].userAddress,
+                price: collection[key][0].price
+            })
+            items = ""
+        }
+        return result
+    }
+
     const loadOrders = async () => {
         await fetch(`http://localhost:8080/api/staff/orders/${window.sessionStorage.getItem("staff_login")}`, {
             method: 'GET',
@@ -24,7 +54,8 @@ export default function StaffOrders() {
                     setShowError(data.message)
                     return
                 }
-                setOrdersList([...data]);
+                setOrdersList([...changeCollection(data)])
+                console.log(data);
             })
     };
 
@@ -57,10 +88,11 @@ export default function StaffOrders() {
                     <thead>
                     <tr>
                         <th scope="col" className="text-center">Order Name</th>
-                        <th scope="col" className="text-center">Good Name</th>
+                        <th scope="col" className="text-center">Goods Name</th>
                         <th scope="col" className="text-center">Customer Login</th>
                         <th scope="col" className="text-center">Delivery Date</th>
                         <th scope="col" className="text-center">User Address</th>
+                        <th scope="col" className="text-center">Price</th>
                         <th scope="col" className="text-center">Action</th>
                     </tr>
                     </thead>
@@ -68,10 +100,11 @@ export default function StaffOrders() {
                     {ordersList.map((order, index) => (
                         <tr key={index}>
                             <td className="text-center">{order.orderName}</td>
-                            <td className="text-center">{order.goodName}</td>
+                            <td className="text-center w-25">{order.goodsName}</td>
                             <td className="text-center">{order.customerLogin}</td>
                             <td className="text-center">{order.deliveryDate}</td>
                             <td className="text-center">{order.userAddress}</td>
+                            <td className="text-center">{order.price}</td>
                             <td className="text-center">
                                 <button className="btn btn-success mr-2" onClick={()=>onUpdate(order.orderName)}>Execute</button>
                             </td>

@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 
-export default function CustomerConfirmOrder() {
+export default function CustomerConfirmOrder(props) {
     const navigate = useNavigate();
     let location = useLocation();
     let order = location.state;
@@ -20,6 +20,7 @@ export default function CustomerConfirmOrder() {
         })
             .then(response => {
                 if (response.ok) {
+                    props.setGoods([])
                     navigate("/customer/main/goods")
                     return
                 }

@@ -3,20 +3,33 @@ import {useNavigate} from "react-router-dom";
 
 export default function AdminGoodsPage() {
     const [goodsList, setGoodsList] = React.useState([]);
+    const [rowsCount, setRowsCount] = React.useState(0);
     const goodsPerTableList = 7
     const [indexOfFirstGood, setIndexOfFirstGood] = useState(1)
     const navigate = useNavigate()
 
     useEffect(() => {
-        loadGoods(indexOfFirstGood, goodsPerTableList-1);
+        loadGoods(indexOfFirstGood, goodsPerTableList - 1);
+        setRows()
     }, []);
 
+    const setRows = async () => {
+        await fetch(`http://localhost:8080/api/user/good/count`, {
+            method: 'GET'
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.text()
+                }
+            }).then(data => {
+                setRowsCount(data)
+            })
+    }
 
     const loadGoods = async (startIndexGood, interval) => {
         console.log(startIndexGood, interval)
         await fetch(`http://localhost:8080/api/user/goods/${startIndexGood}/${interval}`, {
-            method: 'GET',
-            headers: {
+            method: 'GET', headers: {
                 'Accept': 'application/json'
             }
         })
@@ -74,7 +87,9 @@ export default function AdminGoodsPage() {
                                 onClick={() => previousTableList()}
                         >Back
                         </button>
-                        <button className="btn btn-primary " onClick={() => nextTableList()}>Next</button>
+                        <button className="btn btn-primary " onClick={() => nextTableList()}
+                                disabled={(indexOfFirstGood + goodsPerTableList) >= rowsCount}>Next
+                        </button>
                         <button className="btn btn-primary mb-2 offset-9" onClick={() => addGood()}>Add Good</button>
                     </div>
                     <table className="table border shadow">
@@ -83,7 +98,7 @@ export default function AdminGoodsPage() {
                             <th scope="col" className="text-center">Name</th>
                             <th scope="col" className="text-center">Description</th>
                             <th scope="col" className="text-center">Price</th>
-                             <th scope="col" className="text-center">Action</th>
+                            <th scope="col" className="text-center">Action</th>
                         </tr>
                         </thead>
                         <tbody>

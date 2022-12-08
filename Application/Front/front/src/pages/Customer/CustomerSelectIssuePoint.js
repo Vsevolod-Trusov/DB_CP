@@ -56,7 +56,7 @@ export default function CustomerSelectIssuePoint() {
                 </table>
             </div>
             <Link className="btn btn-outline-secondary m-2"
-                  to={`/customer/main/orders/order/${location.state.goodName}/${location.state.price}`}>
+                  to={`/customer/main/orders/order`}>
                 Cancel
             </Link>
         </div>

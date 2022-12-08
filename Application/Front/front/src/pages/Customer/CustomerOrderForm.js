@@ -1,20 +1,45 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Form from "react-bootstrap/Form";
 
-export default function CustomerOrderForm() {
-    const navigate = useNavigate();
-    const {name, price} = useParams();
+export default function CustomerOrderForm(props) {
+    let navigate = useNavigate();
+    const [goodsName, setGoodsName] = useState("");
+    const [allPrice, setAllPrice] = useState(0);
     const [order, setOrder] = useState({
         customerLogin: window.sessionStorage.getItem("customer_login"),
-        goodName: name,
+        goodName: "",
         orderDate: new Date(),
         deliveryDate: new Date(),
-        price: price,
+        price: 0,
         deliveryType: "pickup", deliveryAddress: "",
     });
+
+    useEffect(() => {
+        if(props.goods.length <= 0)
+            navigate("/customer/main/goods")
+
+        const getGoodsName = ()=>{
+            let goodsName = ""
+            for (let i =0; i < props.goods.length; i++){
+                goodsName += `${props.goods[i].name}, `
+            }
+            order.goodName = goodsName.substring(0, goodsName.length-2)
+            setGoodsName(order.goodName)
+        }
+        const getAllPrice = ()=>{
+            let price = 0;
+            for (let i =0; i < props.goods.length; i++){
+                 price += props.goods[i].price
+            }
+            order.price = price
+            setAllPrice(price)
+        }
+        getGoodsName()
+        getAllPrice()
+    }, []);
 
     let [deliveryDate, setDeliveryDate] = useState(new Date());
     const [showError, setShowError] = useState("")
@@ -42,9 +67,9 @@ export default function CustomerOrderForm() {
         if (!checkData()) {
             return
         }
-
         order.deliveryDate = deliveryDate.setHours(deliveryDate.getHours() + 3);
         order.orderDate = order.orderDate.setHours(order.orderDate.getHours() + 3);
+        console.log(JSON.stringify(order))
         await fetch("http://localhost:8080/api/user/order", {
             method: 'POST', headers: {
                 'Content-type': 'application/json',
@@ -54,6 +79,7 @@ export default function CustomerOrderForm() {
 
                 if (response.ok) {
                     setShowError("")
+                    props.setGoods([])
                     navigate("/customer/main/goods")
                 }
                 else
@@ -71,7 +97,6 @@ export default function CustomerOrderForm() {
         }
         order.deliveryDate = deliveryDate.setHours(deliveryDate.getHours() + 3);
         order.orderDate = order.orderDate.setHours(order.orderDate.getHours() + 3);
-        order.price = price;
         navigate(`/customer/main/orders/order/issue`, {state: order})
     }
 
@@ -81,24 +106,24 @@ export default function CustomerOrderForm() {
             <form >
                 <div className="mb-3">
                     <label htmlFor="goodName" className="form-label">
-                        Good Name
+                        Good Names
                     </label>
                     <input
                         type="text"
                         className="form-control"
                         name="goodName"
-                        value={name}
+                        value={goodsName}
                         readOnly={true}
                     />
                 </div>
                 <div className="mb-3">
                     <label htmlFor="price" className="form-label">
-                        Item Price
+                        Price
                     </label>
                     <input type="text" name="tourName"
                            className="form-control"
                            readOnly={true}
-                           value={price}/>
+                           value={allPrice}/>
 
                 </div>
 
@@ -131,11 +156,19 @@ export default function CustomerOrderForm() {
                     Cancel
                 </Link>
 
-                <button type="button" className="btn btn-outline-success"
+                <button type="button" className="btn btn-outline-success me-2"
                         onClick={(e) => {
                             order.deliveryType === 'pickup' ? onSelectIssuePoint() : onSubmit(e)
                         }}>
                     {order.deliveryType === "pickup" ? "Select issue point" : "Confirm Buy"}
+                </button>
+
+                <button type="button" className="btn btn-outline-success"
+                        onClick={() => {
+                            props.setGoods([])
+                            navigate("/customer/main/goods")
+                        }}>
+                    Clear basket
                 </button>
             </form>
         </div>

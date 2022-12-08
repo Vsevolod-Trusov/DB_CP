@@ -65,6 +65,9 @@ export default function Navbar(props) {
                             <Link className="btn btn-outline-light m-lg-1" to="/customer/main/orders">
                                 Orders
                             </Link>
+                            <Link className="btn btn-outline-light m-lg-1" to='/customer/main/orders/order'>
+                                Basket
+                            </Link>
                             <Link className="btn btn-outline-light m-lg-1" to="/customer/main/review">
                                 Review
                             </Link>

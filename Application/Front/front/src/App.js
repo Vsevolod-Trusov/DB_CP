@@ -2,7 +2,7 @@ import './App.css';
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import {BrowserRouter as Router, Navigate, Outlet, Route, Routes} from "react-router-dom";
 import Registration from "./pages/AuthRegMain/Registration";
-import React from "react";
+import React, {useState} from "react";
 import AdminMain from "./pages/Admin/AdminMain";
 import AdminGoodsPage from "./pages/Admin/AdminGoodsPage";
 import AdminOrders from "./pages/Admin/AdminOrders";
@@ -27,7 +27,7 @@ import Authorization from "./pages/AuthRegMain/Authorization";
 
 function App() {
 
-
+const [goodsList, setGoodsList] = useState([])
     return (<div className="App">
         <Router>
             <Routes>
@@ -53,13 +53,13 @@ function App() {
 
                 <Route path={"/customer/main"} element={<><Navbar customer="true"/><Outlet/></>}>
                     <Route path={"/customer/main"} element={<CustomerMain/>}/>
-                    <Route path={"/customer/main/goods"} element={<CustomerGoods/>}/>
+                    <Route path={"/customer/main/goods"} element={<CustomerGoods goods = {goodsList} setGoods = {(good)=>setGoodsList([...good])}/>}/>
                     <Route path={"/customer/main/history"} element={<CustomerHistory/>}/>
                     <Route path={"/customer/main/orders"} element={<CustomerOrders/>}/>
                     <Route path={"/customer/main/review"} element={<CustomerReview/>}/>
                     <Route path={"/customer/main/reviews"} element={<Reviews/>}/>
-                    <Route path={"/customer/main/confirm/order"} element={<CustomerConfirmOrder/>}/>
-                    <Route path={"/customer/main/orders/order/:name/:price"} element={<CustomerOrderForm/>}/>
+                    <Route path={"/customer/main/confirm/order"} element={<CustomerConfirmOrder setGoods = {()=>setGoodsList([])}/>}/>
+                    <Route path={"/customer/main/orders/order"} element={<CustomerOrderForm goods = {goodsList} setGoods = {()=>setGoodsList([])}/>}/>
                     <Route path={"/customer/main/orders/order/issue"} element={<CustomerSelectIssuePoint/>}/>
                 </Route>
 

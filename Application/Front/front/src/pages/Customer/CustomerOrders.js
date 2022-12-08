@@ -29,7 +29,6 @@ export default function CustomerOrders() {
                 orderDate: collection[key][0].orderDate,
                 deliveryDate: collection[key][0].deliveryDate,
                 orderStatus: collection[key][0].orderStatus,
-                orderPrice: collection[key][0].orderPrice,
                 deliveryType: collection[key][0].deliveryType,
                 goodsName: items,
                 customerLogin: collection[key][0].customerLogin,
@@ -77,7 +76,6 @@ export default function CustomerOrders() {
                 throw new Error(`${response.status}`)
             }).then(data => {
                 loadOrders()
-                console.log(data)
             }).catch(error => {
                 alert(error);
             })
@@ -97,19 +95,18 @@ export default function CustomerOrders() {
                 throw new Error(`${response.status}`)
             }).then(data => {
                 loadOrders()
-                console.log(data)
             }).catch(error => {
                 alert(error);
             })
     }
     return (
-        <div className="container">
+        <div className="container-fluid">
             <div className="py-4">
                 <table className="table border shadow">
                     <thead>
                     <tr>
                         <th scope="col" className="text-center">Order Name</th>
-                        <th scope="col" className="text-center">Good Name</th>
+                        <th scope="col" className="text-center w-25">Goods Name</th>
                         <th scope="col" className="text-center">Executor</th>
                         <th scope="col" className="text-center">Delivery Date</th>
                         <th scope="col" className="text-center">Order Date</th>

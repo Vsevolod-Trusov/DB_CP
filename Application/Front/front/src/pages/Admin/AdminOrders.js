@@ -8,6 +8,41 @@ export default function AdminOrders() {
         loadOrders()
     }, []);
 
+    const changeCollection = (list) =>{
+        let collection = list.reduce((r, a) => {
+
+            r[a.orderName] = r[a.orderName] || [];
+
+            r[a.orderName].push(a);
+
+            return r
+        }, {});
+
+        let result = []
+        let items = ""
+        for(let key in collection){
+            for(let item of collection[key]){
+                items += `${item.goodName}, `
+            }
+            items = items.substring(0,items.length-2)
+            result.push({
+                orderName: key,
+                orderDate: collection[key][0].orderDate,
+                deliveryDate: collection[key][0].deliveryDate,
+                status: collection[key][0].status,
+                deliveryType: collection[key][0].deliveryType,
+                goodsName: items,
+                customerLogin: collection[key][0].customerLogin,
+                executorLogin: collection[key][0].executorLogin,
+                userAddress: collection[key][0].userAddress,
+                deliveryAddress: collection[key][0].deliveryAddress,
+                price: collection[key][0].price
+            })
+            items = ""
+        }
+        return result
+    }
+
     const loadOrders = async () => {
         await fetch(`http://localhost:8080/api/admin/orders`, {
             method: 'GET',
@@ -22,8 +57,8 @@ export default function AdminOrders() {
                 }
                 throw new Error(`${response.status}: ${response.text()}`)
             }).then(data => {
-                setOrdersList([...data]);
-                console.log(ordersList)
+                console.log(data)
+                setOrdersList([...changeCollection(data)]);
             }).catch(error => {
                 alert(error);
             })
@@ -40,7 +75,7 @@ export default function AdminOrders() {
                 <table className="table border shadow">
                     <thead>
                     <tr>
-                        <th scope="col" className="text-center">Good Name</th>
+                        <th scope="col" className="text-center">Goods Name</th>
                         <th scope="col" className="text-center">Status</th>
                         <th scope="col" className="text-center">Executor</th>
                         <th scope="col" className="text-center">Customer Login</th>
@@ -54,7 +89,7 @@ export default function AdminOrders() {
                     <tbody>
                     {ordersList.map((order, index) => (
                         <tr key={index}>
-                            <td className="text-center">{order.goodName}</td>
+                            <td className="text-center w-25">{order.goodsName}</td>
                             <td className="text-center">{order.status}</td>
                             {order.executorLogin !== 'executor' ? <td className="text-center">{order.executorLogin}</td>
                                 : <td className="text-center"></td>}
