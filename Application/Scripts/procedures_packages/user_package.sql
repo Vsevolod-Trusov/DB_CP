@@ -1,4 +1,8 @@
 create or replace package user_package as
+    --count rows of Goods table for pagination
+    function count_rows_of_goods return number;
+     --add good to rder
+     procedure add_good_to_order(order_name orders.ordername%type, good_name goods.name%type);
      --add goodstoorders
      procedure add_goods_to_order(order_id orders.id%type, good_id goods.id%type);
     --insert into orders table
@@ -51,6 +55,26 @@ create or replace package user_package as
 end user_package;
 
 create or replace package body user_package as
+    --count rows of goods table
+        function count_rows_of_goods return number
+        is
+            row_count number;
+            begin
+                select count(*) into row_count from goods;
+                return row_count;
+                end;
+    --add good to order
+     procedure add_good_to_order(order_name orders.ordername%type, good_name goods.name%type)
+        is
+         good_id goods.id%type;
+         begin
+             select id into good_id from goods where goods.name = good_name;
+             add_goods_to_order(substr(order_name, 7), good_id );
+             exception when no_data_found then
+                 rollback;
+             raise_application_error(-20001, 'No such item');
+             end;
+
     --add goodstoorder
     procedure add_goods_to_order(order_id orders.id%type, good_id goods.id%type)
         is
