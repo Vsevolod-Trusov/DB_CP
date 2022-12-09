@@ -28,7 +28,6 @@ export default function Navbar(props) {
             <div className="container-fluid">
                 <img src={LogoImg} alt='#' className="img-fluid" style={{width: "3%", height: "3%"}}/>
                 {props.default ? <>
-                        <div className="container-lg text-white">{props.default}</div>
                     </>
 
                     : props.admin ? <>
