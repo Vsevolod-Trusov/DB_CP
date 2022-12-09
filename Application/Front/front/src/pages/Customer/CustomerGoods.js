@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from "react";
+import {Link} from "react-router-dom";
 
 export default function CustomerGoods(props) {
     const [goodsList, setGoodsList] = React.useState([]);
@@ -53,50 +54,55 @@ export default function CustomerGoods(props) {
     }
 
     const putInBasket = (good) => {
-        console.log(good)
+        alert(`Good ${good.name} was added to card`)
         props.setGoods([...props.goods, good])
-        console.log(props.goods)
     }
 
     return (
-        <div className="container">
-            <div className="py-4">
-                <div className="container" style={{paddingLeft: "2%", paddingRight: "2%", paddingBottom: "1%"}}>
-                    <button className="btn btn-primary offset-0"
-                            disabled={(indexOfFirstGood - goodsPerTableList) <= 0}
-                            onClick={() => previousTableList()}
-                    >Back
-                    </button>
-                    <button className="btn btn-primary offset-9" onClick={() => nextTableList()}
-                            disabled={(indexOfFirstGood + goodsPerTableList) >= rowsCount}>Next
-                    </button>
+         goodsList.length === 0 ?
+             <div className="container col-md-6 offset-md-3 border rounded p-4 mt-2 shadow">
+                 <h4 className="text-center m-4">No goods</h4>
+             </div>
+                 :
+                <div className="container">
+                    <div className="py-4">
+                        <div className="container" style={{paddingLeft: "2%", paddingRight: "2%", paddingBottom: "1%"}}>
+                            <button className="btn btn-primary offset-0"
+                                    disabled={(indexOfFirstGood - goodsPerTableList) <= 0}
+                                    onClick={() => previousTableList()}
+                            >Back
+                            </button>
+                            <button className="btn btn-primary offset-9" onClick={() => nextTableList()}
+                                    disabled={(indexOfFirstGood + goodsPerTableList) >= rowsCount}>Next
+                            </button>
+                        </div>
+                        <table className="table border shadow">
+                            <thead>
+                            <tr>
+                                <th scope="col" className="text-center">Name</th>
+                                <th scope="col" className="text-center">Description</th>
+                                <th scope="col" className="text-center">Price</th>
+                                <th scope="col" className="text-center">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {goodsList.map((good, index) => (
+                                <tr key={index}>
+                                    <td className="text-center">{good.name}</td>
+                                    <td className="text-center">{good.description}</td>
+                                    <td className="text-center">{good.price}</td>
+                                    <td className="text-center">
+                                        <button className="btn btn-outline-success mr-2"
+                                                onClick={() => putInBasket(good)}>
+                                            Buy
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <table className="table border shadow">
-                    <thead>
-                    <tr>
-                        <th scope="col" className="text-center">Name</th>
-                        <th scope="col" className="text-center">Description</th>
-                        <th scope="col" className="text-center">Price</th>
-                        <th scope="col" className="text-center">Action</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {goodsList.map((good, index) => (
-                        <tr key={index}>
-                            <td className="text-center">{good.name}</td>
-                            <td className="text-center">{good.description}</td>
-                            <td className="text-center">{good.price}</td>
-                            <td className="text-center">
-                                <button className="btn btn-outline-success mr-2"
-                                        onClick={() => putInBasket(good)}>
-                                    Buy
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+
     );
 }

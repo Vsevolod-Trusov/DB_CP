@@ -29,8 +29,13 @@ export default function CustomerShowReviews() {
     };
 
     return (
+        reviewsList.length === 0 ?
+            <div className="container col-md-6 offset-md-3 border rounded p-4 mt-2 shadow">
+                <h4 className="text-center m-4">No reviews</h4>
+            </div>
+            :
         <div className="container">
-            Customer Goods table
+
             <div className="py-4">
                 <table className="table border shadow">
                     <thead>

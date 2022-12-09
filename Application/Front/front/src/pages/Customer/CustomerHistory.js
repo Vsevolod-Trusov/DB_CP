@@ -59,6 +59,11 @@ export default function CustomerHistory() {
     };
 
     return (
+        historyList.length === 0 ?
+            <div className="container col-md-6 offset-md-3 border rounded p-4 mt-2 shadow">
+                <h4 className="text-center m-4">History is empty</h4>
+            </div>
+            :
         <div className="container">
             <div className="py-4">
                 <table className="table border shadow">

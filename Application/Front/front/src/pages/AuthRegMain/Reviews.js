@@ -28,9 +28,32 @@ export default function Reviews() {
             })
     };
 
+    const deleteReviews = () =>{
+         fetch(`http://localhost:8080/api/admin/reviews`, {
+            method: 'DELETE'
+        })
+            .then(response => {
+
+                if (response.status === 200) {
+                   loadReviews()
+                }
+            })
+    }
+
     return (
+        reviewsList.length === 0 ?
+            <div className="container col-md-6 offset-md-3 border rounded p-4 mt-2 shadow">
+                <h4 className="text-center m-4">No reviews</h4>
+            </div>
+            :
         <div className="container">
             <div className="py-4">
+                <div>
+                    <button className={`btn btn-danger my-2  d-${window.sessionStorage.getItem("admin_login")?"block":"none"}`}
+                    onClick={()=>deleteReviews()}>
+                        Delete reviews
+                    </button>
+                </div>
                 <table className="table border shadow">
                     <thead>
                     <tr>

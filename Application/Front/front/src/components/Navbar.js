@@ -6,20 +6,20 @@ export default function Navbar(props) {
     const {login} = useParams()
     const navigate = useNavigate()
     const customerExit = ()=>{
-        localStorage.removeItem("customer_login");
-        localStorage.removeItem("customer_role");
+        sessionStorage.removeItem("customer_login");
+        sessionStorage.removeItem("customer_role");
         navigate("/authorisation");
     }
 
     const staffExit = ()=>{
-        localStorage.removeItem("staff_login");
-        localStorage.removeItem("staff_role");
+        sessionStorage.removeItem("staff_login");
+        sessionStorage.removeItem("staff_role");
         navigate("/authorisation");
     }
 
     const adminExit = ()=>{
-        localStorage.removeItem("admin_login");
-        localStorage.removeItem("admin_role");
+        sessionStorage.removeItem("admin_login");
+        sessionStorage.removeItem("admin_role");
         navigate("/authorisation");
     }
 
@@ -65,7 +65,7 @@ export default function Navbar(props) {
                                 Orders
                             </Link>
                             <Link className="btn btn-outline-light m-lg-1" to='/customer/main/orders/order'>
-                                Basket
+                                Card
                             </Link>
                             <Link className="btn btn-outline-light m-lg-1" to="/customer/main/review">
                                 Review

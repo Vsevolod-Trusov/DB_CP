@@ -70,6 +70,11 @@ export default function AdminOrders() {
     }
 
     return (
+        ordersList.length === 0 ?
+            <div className="container col-md-6 offset-md-3 border rounded p-4 mt-2 shadow">
+                <h4 className="text-center m-4">No orders</h4>
+            </div>
+            :
         <div style={{padding: "5px"}}>
             <div className="py-4">
                 <table className="table border shadow">

@@ -100,6 +100,11 @@ export default function CustomerOrders() {
             })
     }
     return (
+        ordersList.length === 0 ?
+            <div className="container col-md-6 offset-md-3 border rounded p-4 mt-2 shadow">
+                <h4 className="text-center m-4">No orders</h4>
+            </div>
+            :
         <div className="container-fluid">
             <div className="py-4">
                 <table className="table border shadow">

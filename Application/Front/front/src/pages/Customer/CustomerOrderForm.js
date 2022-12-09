@@ -133,7 +133,7 @@ export default function CustomerOrderForm(props) {
                     </label>
                     <DatePicker name="tourDate" className="form-control" selected={deliveryDate}
 
-                                onChange={(date: Date) => setDeliveryDate(date)}/>
+                                onChange={(date:Date) => setDeliveryDate(date)}/>
                 </div>
 
                 <div className="mb-3">
@@ -163,7 +163,7 @@ export default function CustomerOrderForm(props) {
                     {order.deliveryType === "pickup" ? "Select issue point" : "Confirm Buy"}
                 </button>
 
-                <button type="button" className="btn btn-outline-success"
+                <button type="button" className="btn btn-outline-danger"
                         onClick={() => {
                             props.setGoods([])
                             navigate("/customer/main/goods")

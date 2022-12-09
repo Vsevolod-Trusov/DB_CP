@@ -78,6 +78,11 @@ export default function AdminGoodsPage() {
         loadGoods(indexOfFirstGood + goodsPerTableList, goodsPerTableList - 1);
     }
     return (
+        goodsList.length === 0 ?
+            <div className="container col-md-6 offset-md-3 border rounded p-4 mt-2 shadow">
+                <h4 className="text-center m-4">No goods</h4>
+            </div>
+            :
         <div>
             <div className="container">
                 <div className="py-4">
