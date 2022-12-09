@@ -70,6 +70,11 @@ public class AdminService {
        return adminRepository.getAdminInfo();
     }
 
+    @Transactional
+    public void deleteAllReviews() {
+        adminRepository.deleteAllReviews();
+    }
+
     public List getStaffByDeliveryPointName(String deliveryPointName) {
         return adminRepository.getStaffByDeliveryPointName(deliveryPointName);
     }

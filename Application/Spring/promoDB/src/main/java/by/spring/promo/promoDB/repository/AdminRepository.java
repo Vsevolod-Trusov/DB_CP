@@ -211,4 +211,12 @@ public class AdminRepository {
 
         return adminInfo;
     }
+
+    public void deleteAllReviews(){
+        SimpleJdbcCall delete = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .withProcedureName("delete_reviews");
+        delete.execute();
+    }
 }

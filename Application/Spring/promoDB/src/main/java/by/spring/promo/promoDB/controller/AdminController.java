@@ -30,6 +30,12 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getAdminInfo());
     }
 
+    @DeleteMapping("/reviews")
+    public ResponseEntity<?> deleteAllReviews(){
+        adminService.deleteAllReviews();
+        return ResponseEntity.ok("All reviews deleted");
+    }
+
     @GetMapping("/staff/{deliveryPointName}")
     public ResponseEntity<List> getStaffByDeliveryPointName(@PathVariable String deliveryPointName){
         return ResponseEntity.ok(adminService.getStaffByDeliveryPointName(deliveryPointName));
