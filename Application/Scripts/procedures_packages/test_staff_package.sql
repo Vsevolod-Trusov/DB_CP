@@ -29,3 +29,8 @@ end;
 begin
     dbms_output.put_line(STAFF_PACKAGE.GET_STRING());
 end;
+
+--test staff info
+begin
+    dbms_output.put_line(STAFF_PACKAGE.get_processed_orders_count_by_login('bob'));
+end;

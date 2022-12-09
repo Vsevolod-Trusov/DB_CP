@@ -109,4 +109,37 @@ select orders.ORDERNAME, count(*) as goods_count from orders join GOODSTOORDER G
 select goods.name from goods join goodstoorder on GOODS.ID = GOODSTOORDER.GOODSID
 where GOODSTOORDER.ORDERID = 'EF43821747E4112AE053020014ACAF71';
 
+--test add good to order using procedure
+begin
+    user_package.ADD_GOOD_TO_ORDER('order_EF48651A6DFC1770E053020014AC8389', 'item13');
+end;
 select * from ORDERS_NOT_EXECUTED_VIEW;
+
+delete from orders;
+commit;
+
+--test get admin info
+declare
+    cutomer_info sys_refcursor;
+    unprocessed number;
+    processed number;
+    all_count number;
+    begin
+    cutomer_info := user_package.get_customer_info('user');
+    loop
+        fetch cutomer_info into unprocessed, processed, all_count;
+        exit when cutomer_info%notfound;
+        dbms_output.put_line(unprocessed||' '||processed||' '||all_count);
+    end loop;
+end;
+
+declare
+    count_orders number;
+begin
+    select count(*)
+            into count_orders
+            from orders join userprofile on orders.CUSTOMERPROFILEID = userprofile.id
+            join userlogin on userprofile.USERLOGINID = userlogin.id
+            where userlogin.login = 'user';
+            dbms_output.put_line(count_orders);
+end;

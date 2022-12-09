@@ -1,4 +1,6 @@
 create or replace package staff_package as
+    --get processed orders count
+    function get_processed_orders_count_by_login(staff_login userlogin.login%type) return number;
     --change order status by id
     procedure change_order_status_by_name(order_name orders.ordername%type,
                                           get_status orders.status%type);
@@ -11,6 +13,17 @@ end staff_package;
 
 
 create or replace package body staff_package as
+     function get_processed_orders_count_by_login(staff_login userlogin.login%type) return number
+         is
+         count_orders number;
+         profile_id orders.EXCECUTORPROFILEID%type;
+             begin
+                 select userprofile.id into profile_id from userprofile join userlogin
+                                                   on userprofile.userloginid = userlogin.id
+                                                   where userlogin.login = staff_login;
+                    select count(*) into count_orders from orders where status = 'processed' and EXCECUTORPROFILEID = profile_id;
+                 return count_orders;
+                 end;
     --change order status by id
     procedure change_order_status_by_name(order_name orders.ordername%type,
                                           get_status orders.status%type)

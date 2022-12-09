@@ -6,6 +6,14 @@ where OBJECT_NAME like '%ADMIN_PACKAGE%'
 drop package admin_package;
 
 create or replace package admin_package is
+    --get admin info
+    function get_admin_info return sys_refcursor;
+    --get count of users
+    function get_user_count return number;
+    --get count of staff
+    function get_count_staff return number;
+    --get count of unprocessed orders
+    function get_count_unprocessed_orders return number;
     --get cout of orders by executor login
      function get_count_orders_by_executor_login_id(userlogin_id userlogin.id%type) return number;
     --get userlocation by order id
@@ -51,6 +59,40 @@ end admin_package;
 
 
 create or replace package body admin_package is
+        --get admin info
+    function get_admin_info return sys_refcursor
+    is
+        info_cursor sys_refcursor;
+        begin
+            open info_cursor for select get_user_count as user_count,
+                                        get_count_staff as staff_count,
+                                        get_count_unprocessed_orders as unprocessed_orders_count
+                                        from dual;
+            return info_cursor;
+            end;
+     function get_user_count return number
+         is
+         user_count number;
+         begin
+             select count(*) into user_count from userlogin where role = 'user';
+                return user_count;
+             end;
+    --get count of staff
+    function get_count_staff return number
+         is
+        staff_count number;
+        begin
+            select count(*) into staff_count from userlogin where role = 'staff';
+             return staff_count;
+             end;
+    --get count of unprocessed orders
+    function get_count_unprocessed_orders return number
+         is
+        unprocessed_orders_count number;
+        begin
+            select count(*) into unprocessed_orders_count from orders where status = 'unprocessed';
+             return unprocessed_orders_count;
+             end;
     --get executor login by order id
     function get_count_orders_by_executor_login_id(userlogin_id userlogin.id%type) return number
         is

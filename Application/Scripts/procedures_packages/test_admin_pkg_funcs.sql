@@ -87,3 +87,23 @@ begin
 end;
 select * from goods;
 delete from goods where name = 'item1';
+
+--test get user count
+begin
+    dbms_output.put_line(admin_package.GET_STAFF_COUNT());
+end;
+
+--test get admin info
+declare
+    admin_info sys_refcursor;
+    user_count number;
+    staff_count number;
+    unprocessed_count number;
+    begin
+    admin_info := admin_package.get_admin_info;
+    loop
+        fetch admin_info into user_count, staff_count, unprocessed_count;
+        exit when admin_info%notfound;
+        dbms_output.put_line(user_count||' '||staff_count||' '||unprocessed_count);
+    end loop;
+end;

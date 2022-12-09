@@ -1,5 +1,6 @@
 drop trigger add_in_history_table_after_adding_in_orders_trigger ;
-create or replace trigger add_in_history_table_after_adding_in_orders_trigger after insert
+create or replace trigger add_in_history_table_after_adding_in_orders_trigger
+    after insert
     or update on orders
     for each row
 begin

@@ -1,10 +1,16 @@
 create or replace package user_package as
+    --get cutomer info
+    function get_customer_info(user_login userlogin.login%type) return sys_refcursor;
+    --get count of unprocessed orders by login
+    function get_orders_count_by_status_or_all(user_login userlogin.login%type,
+                                               get_status orders.status%type default 'unprocessed',
+                                               get_all nchar) return number;
     --count rows of Goods table for pagination
     function count_rows_of_goods return number;
-     --add good to rder
-     procedure add_good_to_order(order_name orders.ordername%type, good_name goods.name%type);
-     --add goodstoorders
-     procedure add_goods_to_order(order_id orders.id%type, good_id goods.id%type);
+    --add good to rder
+    procedure add_good_to_order(order_name orders.ordername%type, good_name goods.name%type);
+    --add goodstoorders
+    procedure add_goods_to_order(order_id orders.id%type, good_id goods.id%type);
     --insert into orders table
     function insert_into_orders(customer_profile_id orders.customerprofileid%type,
                                 executor_profile_id orders.excecutorprofileid%type,
@@ -15,7 +21,7 @@ create or replace package user_package as
                                 get_delivery_date orders.deliverydate%type,
                                 get_delivery_type orders.deliverytype%type,
                                 get_order_price orders.price%type
-                                ) return orders.id%type;
+    ) return orders.id%type;
     --get pagination goods between start value and end value
     function get_pagination_goods(start_value number, end_value number) return sys_refcursor;
     --get executor login by order id
@@ -55,25 +61,65 @@ create or replace package user_package as
 end user_package;
 
 create or replace package body user_package as
+    function get_customer_info(user_login userlogin.login%type) return sys_refcursor
+        is
+        info_cursor sys_refcursor;
+    begin
+        open info_cursor for select get_orders_count_by_status_or_all(user_login, 'unprocessed', 'N') as unprocessed_orders,
+                                    get_orders_count_by_status_or_all(user_login, 'processed', 'N')   as processed_orders,
+                                    get_orders_count_by_status_or_all(user_login, get_all=>'Y')       as all_orders
+                             from dual;
+        return info_cursor;
+    end;
+
+    function get_orders_count_by_status_or_all(user_login userlogin.login%type,
+                                               get_status orders.status%type default 'unprocessed',
+                                               get_all nchar) return number
+        is
+        orders_count number;
+        profile_id   orders.customerprofileid%type;
+    begin
+        select userprofile.id
+        into profile_id
+        from userprofile
+                 join userlogin
+                      on userprofile.userloginid = userlogin.id
+        where userlogin.login = user_login;
+
+        if get_all = 'Y' then
+            select count(*)
+            into orders_count
+            from orders
+            where customerprofileid = profile_id;
+        else
+            select count(*)
+            into orders_count
+            from orders
+            where customerprofileid = profile_id
+              and status = get_status;
+        end if;
+        return orders_count;
+    end;
     --count rows of goods table
-        function count_rows_of_goods return number
+    function count_rows_of_goods return number
         is
-            row_count number;
-            begin
-                select count(*) into row_count from goods;
-                return row_count;
-                end;
+        row_count number;
+    begin
+        select count(*) into row_count from goods;
+        return row_count;
+    end;
     --add good to order
-     procedure add_good_to_order(order_name orders.ordername%type, good_name goods.name%type)
+    procedure add_good_to_order(order_name orders.ordername%type, good_name goods.name%type)
         is
-         good_id goods.id%type;
-         begin
-             select id into good_id from goods where goods.name = good_name;
-             add_goods_to_order(substr(order_name, 7), good_id );
-             exception when no_data_found then
-                 rollback;
-             raise_application_error(-20001, 'No such item');
-             end;
+        good_id goods.id%type;
+    begin
+        select id into good_id from goods where goods.name = good_name;
+        add_goods_to_order(substr(order_name, 7), good_id);
+    exception
+        when no_data_found then
+            rollback;
+            raise_application_error(-20001, 'No such item');
+    end;
 
     --add goodstoorder
     procedure add_goods_to_order(order_id orders.id%type, good_id goods.id%type)

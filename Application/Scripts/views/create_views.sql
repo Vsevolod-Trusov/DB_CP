@@ -90,8 +90,9 @@ from reviews
 
 
 --history_view
-create or replace view history_view as
+create or replace view HISTORY_VIEW as
 select g.name         as name,
+       o.ordername       as order_name,
        o.status       as status,
        o.orderdate    as order_date,
        o.deliverydate as delivery_date,
