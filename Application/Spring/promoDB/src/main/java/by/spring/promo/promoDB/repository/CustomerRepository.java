@@ -1,8 +1,6 @@
 package by.spring.promo.promoDB.repository;
 
-import by.spring.promo.promoDB.entity.Good;
-import by.spring.promo.promoDB.entity.Order;
-import by.spring.promo.promoDB.entity.Review;
+import by.spring.promo.promoDB.entity.*;
 import by.spring.promo.promoDB.exception.DataNotFoundException;
 import by.spring.promo.promoDB.rowmapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -183,4 +181,20 @@ public class CustomerRepository {
        BigDecimal count = getRoutes.executeFunction(BigDecimal.class);
         return count;
     }
+
+    public CustomerInfo getCustomerInfo(String customerLogin){
+        SimpleJdbcCall getCustomerInfo = new SimpleJdbcCall(customerJdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("user_package")
+                .declareParameters(new SqlParameter("user_login", Types.NVARCHAR))
+                .withFunctionName("get_customer_info")
+                .returningResultSet("customer_info", new CustomerInfoRowMapper());
+        SqlParameterSource in = new MapSqlParameterSource().addValue("user_login", customerLogin);
+
+        CustomerInfo customerInfo = (CustomerInfo) getCustomerInfo.executeFunction(List.class,in).get(0);
+
+        return customerInfo;
+    }
+
+
 }

@@ -1,5 +1,6 @@
 package by.spring.promo.promoDB.service;
 
+import by.spring.promo.promoDB.entity.CustomerInfo;
 import by.spring.promo.promoDB.entity.Good;
 import by.spring.promo.promoDB.entity.Order;
 import by.spring.promo.promoDB.entity.Review;
@@ -56,9 +57,14 @@ public class CustomerService {
         return customerRepository.getNotExecutedOrdersByLogin(login);
     }
 
+    public CustomerInfo getCustomerInfo(String login) {
+        return customerRepository.getCustomerInfo(login);
+    }
+
     public BigDecimal getGoodsRowsCount(){
         return customerRepository.getGoodsRowsCount();
     }
+
 
     public List getRoutesByUserLogin(String userLogin) {
         return customerRepository.getRoutesByUserLogin(userLogin);

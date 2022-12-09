@@ -25,6 +25,11 @@ public class CustomerController {
         this.adminService = adminService;
     }
 
+    @GetMapping("/info/{userLogin}")
+    public ResponseEntity<CustomerInfo> getCustomerInfo(@PathVariable String userLogin){
+        return ResponseEntity.ok(customerService.getCustomerInfo(userLogin));
+    }
+
     @GetMapping("/routes/{userLogin}")
     public ResponseEntity<List> getRoutesByUserLogin(@PathVariable String userLogin){
         return ResponseEntity.ok(customerService.getRoutesByUserLogin(userLogin));

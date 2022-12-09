@@ -2,6 +2,7 @@ package by.spring.promo.promoDB.controller;
 
 import by.spring.promo.promoDB.entity.Authorization;
 import by.spring.promo.promoDB.entity.Review;
+import by.spring.promo.promoDB.entity.StaffInfo;
 import by.spring.promo.promoDB.entity.UserLogin;
 import by.spring.promo.promoDB.exception.exceptions.SuchProfileLoginExistsException;
 import by.spring.promo.promoDB.repository.StaffRepository;
@@ -28,6 +29,10 @@ public class StaffController {
         this.adminService = adminService;
     }
 
+    @GetMapping("/info/{staffLogin}")
+    public ResponseEntity<StaffInfo> getStaffInfo(@PathVariable String staffLogin) throws SQLException {
+        return ResponseEntity.ok(staffService.getSatffInfo(staffLogin));
+    }
 
     @PostMapping("/registration")
     public ResponseEntity<String> registration(@RequestBody UserLogin userLogin) throws SuchProfileLoginExistsException {

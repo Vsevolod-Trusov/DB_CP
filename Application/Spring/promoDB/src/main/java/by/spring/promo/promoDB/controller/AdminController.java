@@ -1,9 +1,6 @@
 package by.spring.promo.promoDB.controller;
 
-import by.spring.promo.promoDB.entity.Authorization;
-import by.spring.promo.promoDB.entity.Good;
-import by.spring.promo.promoDB.entity.Order;
-import by.spring.promo.promoDB.entity.UserLogin;
+import by.spring.promo.promoDB.entity.*;
 import by.spring.promo.promoDB.exception.exceptions.SuchProfileLoginExistsException;
 import by.spring.promo.promoDB.service.AdminService;
 import org.modelmapper.ModelMapper;
@@ -26,6 +23,11 @@ public class AdminController {
     public AdminController(AdminService adminService, ModelMapper modelMapper) {
         this.adminService = adminService;
         this.modelMapper = modelMapper;
+    }
+
+    @GetMapping("/info")
+    public ResponseEntity<AdminInfo> getAdminInfo(){
+        return ResponseEntity.ok(adminService.getAdminInfo());
     }
 
     @GetMapping("/staff/{deliveryPointName}")

@@ -1,5 +1,6 @@
 package by.spring.promo.promoDB.repository;
 
+import by.spring.promo.promoDB.entity.AdminInfo;
 import by.spring.promo.promoDB.entity.Authorization;
 import by.spring.promo.promoDB.entity.Order;
 import by.spring.promo.promoDB.entity.UserLogin;
@@ -198,5 +199,16 @@ public class AdminRepository {
 
         List staff = simpleJdbcCall.executeFunction(List.class, in);
         return staff;
+    }
+
+    public AdminInfo getAdminInfo(){
+        SimpleJdbcCall getAdminInfo = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .withFunctionName("get_admin_info")
+                .returningResultSet("admin_info", new AdminInfoRowMapper());
+        AdminInfo adminInfo = (AdminInfo) getAdminInfo.executeFunction(List.class).get(0);
+
+        return adminInfo;
     }
 }

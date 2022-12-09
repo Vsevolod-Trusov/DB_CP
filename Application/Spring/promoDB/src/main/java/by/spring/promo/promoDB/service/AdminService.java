@@ -1,9 +1,6 @@
 package by.spring.promo.promoDB.service;
 
-import by.spring.promo.promoDB.entity.Authorization;
-import by.spring.promo.promoDB.entity.Good;
-import by.spring.promo.promoDB.entity.Order;
-import by.spring.promo.promoDB.entity.UserLogin;
+import by.spring.promo.promoDB.entity.*;
 import by.spring.promo.promoDB.exception.exceptions.SuchProfileLoginExistsException;
 import by.spring.promo.promoDB.repository.AdminRepository;
 import org.modelmapper.ModelMapper;
@@ -66,6 +63,11 @@ public class AdminService {
     @Transactional
     public void deleteGoodByName(String getName) {
         adminRepository.deleteGoodByName(getName);
+    }
+
+    @Transactional
+    public AdminInfo getAdminInfo() {
+       return adminRepository.getAdminInfo();
     }
 
     public List getStaffByDeliveryPointName(String deliveryPointName) {
