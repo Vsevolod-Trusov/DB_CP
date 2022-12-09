@@ -6,6 +6,8 @@ where OBJECT_NAME like '%ADMIN_PACKAGE%'
 drop package admin_package;
 
 create or replace package admin_package is
+    --delete reviews
+    procedure delete_reviews;
     --get admin info
     function get_admin_info return sys_refcursor;
     --get count of users
@@ -59,6 +61,13 @@ end admin_package;
 
 
 create or replace package body admin_package is
+        --delete reviews
+    procedure delete_reviews
+            is
+        begin
+                delete from reviews;
+                commit;
+            end;
         --get admin info
     function get_admin_info return sys_refcursor
     is
@@ -82,7 +91,7 @@ create or replace package body admin_package is
          is
         staff_count number;
         begin
-            select count(*) into staff_count from userlogin where role = 'staff';
+            select count(*) into staff_count from userlogin where role = 'staff' and login != 'executor';
              return staff_count;
              end;
     --get count of unprocessed orders
