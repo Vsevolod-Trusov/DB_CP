@@ -21,12 +21,10 @@ import java.util.List;
 public class StaffController {
 
     private final StaffService staffService;
-    private final AdminService adminService;
 
     @Autowired
-    public StaffController(StaffService staffService, StaffRepository staffRepository, AdminService adminService) {
+    public StaffController(StaffService staffService, StaffRepository staffRepository) {
         this.staffService = staffService;
-        this.adminService = adminService;
     }
 
     @GetMapping("/info/{staffLogin}")
@@ -34,18 +32,6 @@ public class StaffController {
         return ResponseEntity.ok(staffService.getSatffInfo(staffLogin));
     }
 
-    @PostMapping("/registration")
-    public ResponseEntity<String> registration(@RequestBody UserLogin userLogin) throws SuchProfileLoginExistsException {
-        adminService.registerUserNote(userLogin.getLogin(), userLogin.getPassword(),
-                userLogin.getRole(), userLogin.getEmail(), userLogin.getPointName());
-        return ResponseEntity.ok("User "+ userLogin.getLogin()+" registered");
-    }
-
-    @PostMapping("/authorization")
-    public ResponseEntity<Authorization> authorization(@RequestBody UserLogin getAuthorization) throws SQLException {
-        return ResponseEntity.ok(adminService.authorizationUserNote(getAuthorization.getLogin(),
-                getAuthorization.getPassword()));
-    }
     @GetMapping("/reviews")
     public List<Review> getReviews(){
         return staffService.findAllReviews();

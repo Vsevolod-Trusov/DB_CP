@@ -2,6 +2,7 @@ package by.spring.promo.promoDB.repository;
 
 import by.spring.promo.promoDB.entity.*;
 import by.spring.promo.promoDB.exception.DataNotFoundException;
+import by.spring.promo.promoDB.exception.exceptions.SuchProfileLoginExistsException;
 import by.spring.promo.promoDB.rowmapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -14,6 +15,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -28,6 +31,78 @@ public class CustomerRepository {
 
     public CustomerRepository(JdbcTemplate customerJdbcTemplate) {
         this.customerJdbcTemplate = customerJdbcTemplate;
+    }
+
+
+    //in general
+    @Transactional
+    public List findAllReviews(){
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(customerJdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("general_package")
+                .withFunctionName("get_reviews")
+                .returningResultSet("reviews", new ReviewMapper());
+        List reviews = simpleJdbcCall.executeFunction(List.class);
+        return reviews;
+    }
+
+
+    //in general
+    @Transactional
+    @ExceptionHandler
+    public void updateOrderStatus(String orderName, String status) throws SQLException {
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(customerJdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("general_package")//поменять пакет
+                .declareParameters(new SqlParameter("order_name", Types.NVARCHAR),
+                        new SqlParameter("get_status", Types.NVARCHAR))
+                .withProcedureName("change_order_status_by_name");
+        SqlParameterSource in = new MapSqlParameterSource().addValue("order_name", orderName)
+                .addValue("get_status", status);
+        simpleJdbcCall.execute(in);
+    }
+    //in general
+    @Transactional
+    public void register(String getLogin, String getPassword, String getRole, String getEmail,
+                         String getPointName) throws SuchProfileLoginExistsException {
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(customerJdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("user_package")
+                .declareParameters(new SqlParameter("get_login", Types.NVARCHAR),
+                        new SqlParameter("get_userpoint_name", Types.NVARCHAR),
+                        new SqlParameter("password", Types.NVARCHAR),
+                        new SqlParameter("get_role", Types.NVARCHAR),
+                        new SqlParameter("get_email", Types.NVARCHAR))
+                .withProcedureName("register_user");
+
+        SqlParameterSource in = new MapSqlParameterSource()
+                .addValue("get_login", getLogin)
+                .addValue("get_userpoint_name", getPointName)
+                .addValue("password", getPassword)
+                .addValue("get_role", getRole)
+                .addValue("get_email", getEmail);
+
+        simpleJdbcCall.execute(in);
+    }
+
+    //in general
+    @Transactional
+    public Authorization authorization(String getLogin, String getPassword) throws SQLException {
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(customerJdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("user_package")
+                .declareParameters(new SqlParameter("get_login", Types.NVARCHAR),
+                        new SqlParameter("get_password", Types.NVARCHAR))
+                .withFunctionName("authorization")
+                .returningResultSet("result", new AuthorizationRowMapper());
+
+        SqlParameterSource in = new MapSqlParameterSource()
+                .addValue("get_login", getLogin)
+                .addValue("get_password", getPassword);
+
+        List userLogin = simpleJdbcCall.executeFunction(List.class, in);
+        Authorization authorization = (Authorization) userLogin.get(0);
+        return authorization;
     }
 
     //обработчик добавлен
@@ -47,10 +122,11 @@ public class CustomerRepository {
         insertReview.execute(in);
     }
 
+    //in general
     public List findAllGoods(int startValue, int endValue) {
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(customerJdbcTemplate)
                 .withSchemaName("ADMIN")
-                .withCatalogName("user_package")
+                .withCatalogName("general_package")
                 .withFunctionName("get_pagination_goods")
                 .declareParameters(
                         new SqlParameter("start_value", Types.INTEGER),
@@ -76,7 +152,6 @@ public class CustomerRepository {
         List goods = simpleJdbcCall.executeFunction(List.class, in);
 
         return (Good) goods.get(0);
-
     }
 
     public void insertIntoGoodsToOrder(String orderName, List<String> itemsNamesList ) {
@@ -173,10 +248,11 @@ public class CustomerRepository {
         return routesList;
     }
 
+    //in general
     public BigDecimal getGoodsRowsCount(){
         SimpleJdbcCall getRoutes = new SimpleJdbcCall(customerJdbcTemplate)
                 .withSchemaName("ADMIN")
-                .withCatalogName("user_package")
+                .withCatalogName("general_package")
                 .withFunctionName("count_rows_of_goods");
        BigDecimal count = getRoutes.executeFunction(BigDecimal.class);
         return count;

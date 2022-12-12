@@ -1,7 +1,9 @@
 package by.spring.promo.promoDB.service;
 
+import by.spring.promo.promoDB.entity.Authorization;
 import by.spring.promo.promoDB.entity.Review;
 import by.spring.promo.promoDB.entity.StaffInfo;
+import by.spring.promo.promoDB.exception.exceptions.SuchProfileLoginExistsException;
 import by.spring.promo.promoDB.repository.StaffRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -18,11 +18,20 @@ import java.util.List;
 public class CustomerController {
 
     private final CustomerService customerService;
-    private final AdminService adminService;
 
-    public CustomerController(CustomerService customerService, AdminService adminService) {
+    public CustomerController(CustomerService customerService) {
         this.customerService = customerService;
-        this.adminService = adminService;
+    }
+
+    @GetMapping("/reviews")
+    public List<Review> getReviews(){
+        return customerService.findAllReviews();
+    }
+
+    @GetMapping("/order/{orderName}")
+    public ResponseEntity<String> updateOrderStatus(@PathVariable String orderName) throws SQLException {
+        customerService.updateOrderStatus(orderName, "executed");
+        return ResponseEntity.ok("Order "+orderName+" updated successfully");
     }
 
     @GetMapping("/info/{userLogin}")
@@ -36,14 +45,14 @@ public class CustomerController {
     }
     @PostMapping("/registration")
     public ResponseEntity<String> registration(@RequestBody UserLogin userLogin) throws SuchProfileLoginExistsException {
-        adminService.registerUserNote(userLogin.getLogin(), userLogin.getPassword(),
+        customerService.registerUserNote(userLogin.getLogin(), userLogin.getPassword(),
                 userLogin.getRole(), userLogin.getEmail(), userLogin.getPointName());
         return ResponseEntity.ok("User "+ userLogin.getLogin()+" registered");
     }
 
     @PostMapping("/authorization")
     public ResponseEntity<Authorization> authorization(@RequestBody UserLogin getAuthorization) throws SQLException {
-        return ResponseEntity.ok(adminService.authorizationUserNote(getAuthorization.getLogin(),
+        return ResponseEntity.ok(customerService.authorizationUserNote(getAuthorization.getLogin(),
                 getAuthorization.getPassword()));
     }
     @PostMapping("/review")

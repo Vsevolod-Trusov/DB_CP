@@ -1,10 +1,8 @@
 package by.spring.promo.promoDB.service;
 
-import by.spring.promo.promoDB.entity.CustomerInfo;
-import by.spring.promo.promoDB.entity.Good;
-import by.spring.promo.promoDB.entity.Order;
-import by.spring.promo.promoDB.entity.Review;
+import by.spring.promo.promoDB.entity.*;
 import by.spring.promo.promoDB.exception.DataNotFoundException;
+import by.spring.promo.promoDB.exception.exceptions.SuchProfileLoginExistsException;
 import by.spring.promo.promoDB.repository.CustomerRepository;
 import by.spring.promo.promoDB.rowmapper.GoodRowMapper;
 import org.springframework.stereotype.Service;
@@ -23,6 +21,25 @@ public class CustomerService {
         this.customerRepository = customerRepository;
     }
 
+    @Transactional
+    public List<Review> findAllReviews() {
+        return customerRepository.findAllReviews();
+    }
+
+    @Transactional
+    public void updateOrderStatus(String getOrderName, String getStatus) throws SQLException {
+        customerRepository.updateOrderStatus(getOrderName, getStatus);
+    }
+    @Transactional
+    public void registerUserNote(String getLogin, String getPassword, String getRole, String getEmail,
+                                 String getPointName) throws SuchProfileLoginExistsException {
+        customerRepository.register(getLogin, getPassword, getRole, getEmail, getPointName);
+    }
+
+    @Transactional
+    public Authorization authorizationUserNote(String getLogin, String getPassword) throws SQLException {
+        return customerRepository.authorization(getLogin, getPassword);
+    }
     @Transactional
     public void addReview(Review getReview) throws DataNotFoundException, SQLException {
         customerRepository.addReview(getReview);
@@ -64,7 +81,6 @@ public class CustomerService {
     public BigDecimal getGoodsRowsCount(){
         return customerRepository.getGoodsRowsCount();
     }
-
 
     public List getRoutesByUserLogin(String userLogin) {
         return customerRepository.getRoutesByUserLogin(userLogin);

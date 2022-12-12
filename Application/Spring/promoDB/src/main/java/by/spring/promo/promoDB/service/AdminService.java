@@ -22,17 +22,19 @@ public class AdminService {
         this.adminRepository = adminRepository;
         this.modelMapper = modelMapper;
     }
-    @Transactional
-    public void registerUserNote(String getLogin, String getPassword, String getRole, String getEmail,
-                                 String getPointName) throws SuchProfileLoginExistsException {
-         adminRepository.register(getLogin, getPassword, getRole, getEmail, getPointName);
-    }
 
     @Transactional
-    public Authorization authorizationUserNote(String getLogin, String getPassword) throws SQLException {
-        return adminRepository.authorization(getLogin, getPassword);
+    public List<Review> findAllReviews() {
+        return adminRepository.findAllReviews();
+    }
+    @Transactional
+    public List findAllGoods(int startValue, int endValue) {
+        return adminRepository.findAllGoods(startValue, endValue);
     }
 
+    public BigDecimal getGoodsRowsCount(){
+        return adminRepository.getGoodsRowsCount();
+    }
     @Transactional
     public List<UserLogin> findAllPersonsByRole(String role) {
         return adminRepository.findAllPersonsByRole(role);
@@ -77,5 +79,29 @@ public class AdminService {
 
     public List getStaffByDeliveryPointName(String deliveryPointName) {
         return adminRepository.getStaffByDeliveryPointName(deliveryPointName);
+    }
+
+    public void deleteAllGoods() {
+        adminRepository.deleteAllGoods();
+    }
+
+    public void importGoods() {
+        adminRepository.importGoods();
+    }
+
+    public void exportOrders() {
+        adminRepository.exportOrders();
+    }
+
+    public List getStaffInfo() {
+        return adminRepository.getStaffInfo();
+    }
+    @Transactional
+    public List findExecutedOrders(){
+        return adminRepository.findExecutedOrders();
+    }
+
+    public void loadRows() {
+        adminRepository.loadRows();
     }
 }

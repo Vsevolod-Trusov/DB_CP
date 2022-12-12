@@ -1,7 +1,10 @@
 package by.spring.promo.promoDB.repository;
 
+import by.spring.promo.promoDB.entity.Authorization;
 import by.spring.promo.promoDB.entity.StaffInfo;
 import by.spring.promo.promoDB.exception.DataNotFoundException;
+import by.spring.promo.promoDB.exception.exceptions.SuchProfileLoginExistsException;
+import by.spring.promo.promoDB.rowmapper.AuthorizationRowMapper;
 import by.spring.promo.promoDB.rowmapper.OrderRowMapper;
 import by.spring.promo.promoDB.rowmapper.ReviewMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,23 +36,26 @@ public class StaffRepository {
         this.staffJdbcTemplate = staffJdbcTemplate;
     }
 
+    //in general
     @Transactional
     public List findAllReviews(){
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(staffJdbcTemplate)
                 .withSchemaName("ADMIN")
-                .withCatalogName("staff_package")
+                .withCatalogName("general_package")
                 .withFunctionName("get_reviews")
                 .returningResultSet("reviews", new ReviewMapper());
         List reviews = simpleJdbcCall.executeFunction(List.class);
         return reviews;
     }
 
+
+    //in general
     @Transactional
     @ExceptionHandler
     public void updateOrderStatus(String orderName, String status) throws SQLException {
             SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(staffJdbcTemplate)
                     .withSchemaName("ADMIN")
-                    .withCatalogName("staff_package")
+                    .withCatalogName("general_package")//поменять пакет
                     .declareParameters(new SqlParameter("order_name", Types.NVARCHAR),
                             new SqlParameter("get_status", Types.NVARCHAR))
                     .withProcedureName("change_order_status_by_name");

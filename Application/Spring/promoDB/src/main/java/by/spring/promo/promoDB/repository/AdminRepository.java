@@ -36,6 +36,46 @@ public class AdminRepository {
     public AdminRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+    //in general
+    @Transactional
+    public List findAllReviews(){
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("general_package")
+                .withFunctionName("get_reviews")
+                .returningResultSet("reviews", new ReviewMapper());
+        List reviews = simpleJdbcCall.executeFunction(List.class);
+        return reviews;
+    }
+
+    //in general
+    public List findAllGoods(int startValue, int endValue) {
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("general_package")
+                .withFunctionName("get_pagination_goods")
+                .declareParameters(
+                        new SqlParameter("start_value", Types.INTEGER),
+                        new SqlParameter("end_value", Types.INTEGER))
+                .returningResultSet("goods", new GoodRowMapper());
+
+        SqlParameterSource in = new MapSqlParameterSource()
+                .addValue("start_value", startValue)
+                .addValue("end_value", endValue);
+        List goods = simpleJdbcCall.executeFunction(List.class, in);
+
+        return goods;
+    }
+
+    //in general
+    public BigDecimal getGoodsRowsCount(){
+        SimpleJdbcCall getRoutes = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("general_package")
+                .withFunctionName("count_rows_of_goods");
+        BigDecimal count = getRoutes.executeFunction(BigDecimal.class);
+        return count;
+    }
 
     @Transactional
     public List findAllPersonsByRole(String role) {
@@ -48,51 +88,6 @@ public class AdminRepository {
         return res;
     }
 
-    //обработчик добавлен
-    @Transactional
-    public void register(String getLogin, String getPassword, String getRole, String getEmail,
-                         String getPointName) throws SuchProfileLoginExistsException {
-            SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                    .withSchemaName("ADMIN")
-                    .withCatalogName("admin_package")
-                    .declareParameters(new SqlParameter("get_login", Types.NVARCHAR),
-                            new SqlParameter("get_userpoint_name", Types.NVARCHAR),
-                            new SqlParameter("password", Types.NVARCHAR),
-                            new SqlParameter("get_role", Types.NVARCHAR),
-                            new SqlParameter("get_email", Types.NVARCHAR))
-                    .withProcedureName("register_user");
-
-            SqlParameterSource in = new MapSqlParameterSource()
-                    .addValue("get_login", getLogin)
-                    .addValue("get_userpoint_name", getPointName)
-                    .addValue("password", getPassword)
-                    .addValue("get_role", getRole)
-                    .addValue("get_email", getEmail);
-
-            simpleJdbcCall.execute(in);
-    }
-
-    //обработчик добавлен
-    @Transactional
-    public Authorization authorization(String getLogin, String getPassword) throws SQLException {
-        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                .withSchemaName("ADMIN")
-                .withCatalogName("admin_package")
-                .declareParameters(new SqlParameter("get_login", Types.NVARCHAR),
-                        new SqlParameter("get_password", Types.NVARCHAR))
-                .withFunctionName("authorisation")
-                .returningResultSet("result", new AuthorizationRowMapper());
-
-        SqlParameterSource in = new MapSqlParameterSource()
-                .addValue("get_login", getLogin)
-                .addValue("get_password", getPassword);
-
-        List userLogin = simpleJdbcCall.executeFunction(List.class, in);
-        Authorization authorization = (Authorization) userLogin.get(0);
-        return authorization;
-    }
-
-    @Transactional
     public List findUnprocessedOrders() {
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withSchemaName("ADMIN")
@@ -129,7 +124,7 @@ public class AdminRepository {
     public List getAnalysisBetweenTwoPointsInfo(String customerPointName) {
             SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
                     .withSchemaName("ADMIN")
-                    .withCatalogName("user_package").
+                    .withCatalogName("general_package").
                     declareParameters(new SqlParameter("customer_point_name", Types.NVARCHAR))
                     .withFunctionName("get_route_length_analysis")
                     .returningResultSet("route_length_analysis", new RouteRowMapper());
@@ -218,5 +213,59 @@ public class AdminRepository {
                 .withCatalogName("admin_package")
                 .withProcedureName("delete_reviews");
         delete.execute();
+    }
+
+    public void deleteAllGoods() {
+        SimpleJdbcCall delete = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .withProcedureName("delete_goods");
+        delete.execute();
+    }
+
+    public void importGoods() {
+        SimpleJdbcCall importGoods = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .withProcedureName("goods_import");
+        importGoods.execute();
+    }
+
+    public void exportOrders() {
+        SimpleJdbcCall importGoods = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .withProcedureName("orders_export");
+        importGoods.execute();
+    }
+
+    public List getStaffInfo() {
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .withFunctionName("get_staff_info")
+                .returningResultSet("staff", new StaffRowMapper());
+
+        List staff = simpleJdbcCall.executeFunction(List.class);
+        return staff;
+    }
+
+    public List findExecutedOrders() {
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .withFunctionName("get_executed_orders")
+                .returningResultSet("orders", new OrderRowMapper());
+
+        List res = simpleJdbcCall.executeFunction(List.class);
+        return res;
+    }
+
+    public void loadRows() {
+        SimpleJdbcCall importGoods = new SimpleJdbcCall(jdbcTemplate)
+                .withSchemaName("ADMIN")
+                .withCatalogName("admin_package")
+                .withProcedureName("load_rows");
+        importGoods.execute();
     }
 }
