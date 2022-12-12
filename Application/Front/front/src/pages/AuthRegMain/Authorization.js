@@ -43,7 +43,7 @@ export default function Authorization() {
             return
         }
 
-        await fetch("http://localhost:8080/api/admin/authorization", {
+        await fetch("http://localhost:8080/api/user/authorization", {
             method: 'POST',
             headers: {
                 'Content-type': 'application/json',

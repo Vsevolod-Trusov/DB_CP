@@ -9,7 +9,6 @@ export default function ChangeOrderFormSecondStep() {
         loadeExecutors()
     }, []);
     const loadeExecutors = async () => {
-        console.log(location.state.deliveryAddress)
         await fetch(`http://localhost:8080/api/admin/staff/${location.state.deliveryAddress}`, {
             method: 'GET',
             headers: {
@@ -24,7 +23,6 @@ export default function ChangeOrderFormSecondStep() {
                 throw new Error(`${response.status}: ${response.text()}`)
             }).then(data => {
                 setExecutorsList([...data]);
-                console.log(executorsList)
             }).catch(error => {
                 alert(error);
             })

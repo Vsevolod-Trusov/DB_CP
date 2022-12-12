@@ -69,7 +69,7 @@ export default function CustomerOrderForm(props) {
         }
         order.deliveryDate = deliveryDate.setHours(deliveryDate.getHours() + 3);
         order.orderDate = order.orderDate.setHours(order.orderDate.getHours() + 3);
-        console.log(JSON.stringify(order))
+        (JSON.stringify(order))
         await fetch("http://localhost:8080/api/user/order", {
             method: 'POST', headers: {
                 'Content-type': 'application/json',

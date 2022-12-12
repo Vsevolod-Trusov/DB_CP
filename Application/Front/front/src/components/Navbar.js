@@ -23,6 +23,22 @@ export default function Navbar(props) {
         navigate("/authorisation");
     }
 
+    const exportOrders = ()=>{
+        fetch(`http://localhost:8080/api/admin/export`, {
+            method: 'GET'
+        })
+            .then(response => {
+                if (response.status === 200) {
+                    return response.text()
+                }
+                throw new Error(`${response.status}: Error while importing`)
+            }).then(data => {
+            alert(data)
+        }).catch(error => {
+            alert(error);
+        })
+    }
+
     return (<div>
         <nav className="navbar navbar-expand-lg navbar-dark" style={{background: "#c402b4"}}>
             <div className="container-fluid">
@@ -39,12 +55,22 @@ export default function Navbar(props) {
                             <Link className="btn btn-outline-light m-lg-1" to="/admin/main/orders">
                                 Orders
                             </Link>
+                            <Link className="btn btn-outline-light m-lg-1" to="/admin/main/executed">
+                                Executed
+                            </Link>
                             <Link className="btn btn-outline-light m-lg-1" to="/admin/main/goods">
                                 Goods
                             </Link>
                             <Link className="btn btn-outline-light m-lg-1" to="/admin/main/reviews">
                                 Show
                             </Link>
+                            <Link className="btn btn-outline-light m-lg-1" to="/admin/main/staff">
+                                Staff
+                            </Link>
+
+                            <button className="btn btn-outline-light " onClick={()=>exportOrders()}>
+                               Export
+                            </button>
                         </div>
                         <button className="btn btn-outline-light justify-content-end" onClick={()=>adminExit()}>
                             Exit

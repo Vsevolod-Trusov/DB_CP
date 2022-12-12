@@ -34,7 +34,8 @@ export default function CustomerOrders() {
                 customerLogin: collection[key][0].customerLogin,
                 executorLogin: collection[key][0].executorLogin,
                 deliveryPoint: collection[key][0].deliveryPoint,
-                price: collection[key][0].price
+                price: collection[key][0].price,
+                status: collection[key][0].status
             })
             items = ""
         }
@@ -64,7 +65,7 @@ export default function CustomerOrders() {
 
     const onDelete = async (orderName) =>{
 
-        console.log(orderName)
+        (orderName)
         await fetch(`http://localhost:8080/api/user/order/${orderName}`, {
             method: 'DELETE'
         })
@@ -83,8 +84,8 @@ export default function CustomerOrders() {
 
     const onTook = async (orderName) =>{
 
-        console.log(orderName)
-        await fetch(`http://localhost:8080/api/staff/order/${orderName}`, {
+        (orderName)
+        await fetch(`http://localhost:8080/api/user/order/${orderName}`, {
             method: 'GET'
         })
             .then(response => {
@@ -112,6 +113,7 @@ export default function CustomerOrders() {
                     <tr>
                         <th scope="col" className="text-center">Order Name</th>
                         <th scope="col" className="text-center w-25">Goods Name</th>
+                        <th scope="col" className="text-center ">Status</th>
                         <th scope="col" className="text-center">Executor</th>
                         <th scope="col" className="text-center">Delivery Date</th>
                         <th scope="col" className="text-center">Order Date</th>
@@ -120,26 +122,27 @@ export default function CustomerOrders() {
                     </tr>
                     </thead>
                     <tbody>
-                    {ordersList.map((good, index) => (
+                    {ordersList.map((order, index) => (
                         <tr key={index}>
-                            <td className="text-center">{good.orderName}</td>
-                            <td className="text-center">{good.goodsName}</td>
-                            {good.executorLogin === 'executor'
-                                ? <td className="text-center">{good.deliveryType}</td>
-                                    : <td className="text-center">{good.executorLogin}</td>}
-                            <td className="text-center">{good.deliveryDate}</td>
-                            <td className="text-center">{good.orderDate}</td>
-                            <td className="text-center">{good.price === 0?"":good.price}</td>
+                            <td className="text-center">{order.orderName}</td>
+                            <td className="text-center">{order.goodsName}</td>
+                            <td className="text-center">{order.status}</td>
+                            {order.executorLogin === 'executor'
+                                ? <td className="text-center">{order.deliveryType}</td>
+                                    : <td className="text-center">{order.executorLogin}</td>}
+                            <td className="text-center">{order.deliveryDate}</td>
+                            <td className="text-center">{order.orderDate}</td>
+                            <td className="text-center">{order.price === 0?"":order.price}</td>
                             <td className="text-center">
                                 {
-                                    good.deliveryType === 'pickup'?
+                                    order.deliveryType === 'pickup'?
                                     <button className="btn btn-primary me-2"
-                                    onClick={() => onTook(good.orderName)}>Took
+                                    onClick={() => onTook(order.orderName)}>Took
                                     </button>
                                         :<></>
                                 }
                                 <button className="btn btn-danger justify-content-end"
-                                        onClick={() => onDelete(good.orderName)}>Delete
+                                        onClick={() => onDelete(order.orderName)}>Delete
                                 </button>
                             </td>
                         </tr>

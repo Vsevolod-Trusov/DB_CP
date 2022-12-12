@@ -24,6 +24,8 @@ import ConfirmUpdateOrder from "./pages/Admin/ConfirmUpdateOrder";
 import CustomerSelectIssuePoint from "./pages/Customer/CustomerSelectIssuePoint";
 import CustomerConfirmOrder from "./pages/Customer/CustomerConfirmOrder";
 import Authorization from "./pages/AuthRegMain/Authorization";
+import ExecutedOrdersPage from "./pages/Admin/ExecutedOrdersPage";
+import StaffPage from "./pages/Admin/StaffPage";
 
 function App() {
 
@@ -49,6 +51,10 @@ const [goodsList, setGoodsList] = useState([])
                            element={<ChangeOrderFormSecondStep/>}/>
                     <Route path={"/admin/main/orders/order/confirm"}
                            element={<ConfirmUpdateOrder/>}/>
+                    <Route path={"/admin/main/staff"}
+                           element={<StaffPage/>}/>
+                    <Route path={"/admin/main/executed"}
+                           element={<ExecutedOrdersPage/>}/>
                 </Route>
 
                 <Route path={"/customer/main"} element={<><Navbar customer="true"/><Outlet/></>}>

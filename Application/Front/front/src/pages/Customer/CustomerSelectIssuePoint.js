@@ -5,7 +5,6 @@ export default function CustomerSelectIssuePoint() {
     let location = useLocation();
     let navigate = useNavigate();
     const [pointsList, setPointsList] = React.useState([]);
-    console.log(`Order: ${JSON.stringify(location.state)}`)
     useEffect(() => {
         loadPoints()
     }, []);

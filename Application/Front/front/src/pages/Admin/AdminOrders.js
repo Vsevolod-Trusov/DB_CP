@@ -57,7 +57,6 @@ export default function AdminOrders() {
                 }
                 throw new Error(`${response.status}: ${response.text()}`)
             }).then(data => {
-                console.log(data)
                 setOrdersList([...changeCollection(data)]);
             }).catch(error => {
                 alert(error);
@@ -65,7 +64,6 @@ export default function AdminOrders() {
     };
 
     const changeOrder = async (order) =>{
-        console.log(order)
        navigate(`/admin/main/orders/order`, {state: order})
     }
 

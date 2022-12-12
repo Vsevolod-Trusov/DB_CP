@@ -9,7 +9,15 @@ export default function Reviews() {
     }, []);
 
     const loadReviews = async () => {
-        await fetch(`http://localhost:8080/api/staff/reviews`, {
+        let url = ""
+        if(window.sessionStorage.getItem("admin_login"))
+            url = "http://localhost:8080/api/admin/reviews"
+        else if (window.sessionStorage.getItem("staff_login"))
+            url = "http://localhost:8080/api/staff/reviews"
+        else
+            url = "http://localhost:8080/api/user/reviews"
+
+        await fetch(url, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json'

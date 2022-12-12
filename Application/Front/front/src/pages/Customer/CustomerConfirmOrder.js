@@ -9,7 +9,7 @@ export default function CustomerConfirmOrder(props) {
 
     const confirmOrder = async (e) => {
         e.preventDefault()
-        console.log(JSON.stringify(order))
+        (JSON.stringify(order))
         await fetch("http://localhost:8080/api/user/order", {
             method: 'POST',
             headers: {

@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from "react";
-import {Navigate, Outlet, Route, Routes} from "react-router-dom";
 
 export default function StaffOrders() {
     const [ordersList , setOrdersList] = React.useState([]);
@@ -55,7 +54,7 @@ export default function StaffOrders() {
                     return
                 }
                 setOrdersList([...changeCollection(data)])
-                console.log(data);
+                (data);
             })
     };
 

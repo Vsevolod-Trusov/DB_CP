@@ -22,6 +22,7 @@ export default function CustomerGoods(props) {
                 }
             }).then(data => {
                 setRowsCount(data)
+                (data)
             })
     }
     const loadGoods = async (startIndexGood, interval) => {

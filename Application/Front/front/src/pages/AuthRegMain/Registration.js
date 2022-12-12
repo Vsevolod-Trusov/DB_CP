@@ -44,7 +44,6 @@ export default function Registration() {
 
     const onInputChange = (e) => {
         setUser({ ...user, [e.target.name]: e.target.value});
-        console.log(e.target.value)
     };
 
     const checkData = () =>{
@@ -83,7 +82,6 @@ export default function Registration() {
             setShowError("Role is empty")
             return false
         }
-        console.log(user.pointName)
         if(user.pointName.length <=0 ){
             setShowError("Region is empty")
             return false
@@ -97,7 +95,7 @@ export default function Registration() {
          if (!checkData()) {
              return
          }
-        await fetch("http://localhost:8080/api/admin/registration", {
+        await fetch("http://localhost:8080/api/user/registration", {
             method: 'POST',
             headers: {
                 'Content-type': 'application/json',

@@ -13,7 +13,7 @@ export default function ConfirmUpdateOrder() {
     const onSubmit = async (e) => {
         e.preventDefault()
         location.state.price = location.state.price.toFixed(2)
-        console.log(JSON.stringify(location.state))
+        (JSON.stringify(location.state))
         await fetch("http://localhost:8080/api/admin/order", {
             method: 'POST',
             headers: {
