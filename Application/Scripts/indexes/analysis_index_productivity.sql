@@ -154,3 +154,29 @@ from points
 where points.type = 'user'
   and rtrim(POINT_NAME) = rtrim('Беларуская 21');
 --end
+
+select *
+from points
+where TYPE = 'user';
+
+--test get route analysis by login
+declare
+    customer_point_name points.point_name%type := 'Беларуская 21';
+    begin
+
+end;
+
+select p2.point_name                                                    as delivery_point,
+       GENERAL_PACKAGE.GET_DISTANCE_BETWEEN_DELIVERYPOINT_CUSTOMER(p2.point_name,
+                                                   'Беларуская 21') as distance,
+       count(*)                                                         as staff_count
+from userprofile
+         join points p1
+              on userprofile.USERPOINTID = p1.id
+         join userlogin on
+    userprofile.USERLOGINID = userlogin.id
+         join points p2 on p2.id = userprofile.USERPOINTID
+where p2.type = 'staff'
+  and userlogin.role = 'staff'
+  and userlogin.login != 'executor'
+group by p2.point_name, 'Беларуская 21';

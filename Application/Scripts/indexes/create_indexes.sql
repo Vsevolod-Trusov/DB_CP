@@ -34,23 +34,17 @@ create index REVIEWS_USERPROFILEID_INDEX on REVIEWS(USERPROFILEID);
 
 --History table
 drop index HISTORY_ORDERID_INDEX;
-drop index HISTORY_ORDERNAME_INDEX;
 -----------------------------
 create index HISTORY_ORDERID_INDEX on HISTORY(ORDERID);
-create index HISTORY_ORDERNAME_INDEX on HISTORY(ORDERNAME);
 
 --POINTS
-drop index POINTS_POINT_NAME_INDEX;
 drop index POINTS_TYPE_INDEX;
 -----------------------
-create index POINTS_POINT_NAME_INDEX on POINTS(POINT_NAME);
 create index POINTS_TYPE_INDEX on POINTS(TYPE);
 
 --USERLOGIN
-drop index USERLOGIN_LOGIN_INDEX;
 drop index USERLOGIN_ROLE_INDEX;
 ------------------
-create index USERLOGIN_LOGIN_INDEX on USERLOGIN(LOGIN);
 create index USERLOGIN_ROLE_INDEX on USERLOGIN(ROLE);
 
 --GOODS

@@ -14,29 +14,16 @@ drop index SHAPES_SP_Index;
 create index SHAPES_SP_Index on SHAPES(AREA)
   indextype is mdsys.spatial_index;
 
-
---creating spatial index fot table deliverypoints
+--creating spatial index fot table POINTS
 INSERT INTO USER_SDO_GEOM_METADATA(TABLE_NAME, COLUMN_NAME, DIMINFO, SRID)
-VALUES ('DELIVERYPOINTS', 'LOCATION', MDSYS.SDO_DIM_ARRAY(MDSYS.SDO_DIM_ELEMENT('X', -180, 180, 0.005),
+VALUES ('POINTS', 'LOCATION', MDSYS.SDO_DIM_ARRAY(MDSYS.SDO_DIM_ELEMENT('X', -180, 180, 0.005),
                                      MDSYS.SDO_DIM_ELEMENT('Y', -90, 90, 0.005)),
         4326);
-DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'DELIVERYPOINTS';
+DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'POINTS';
 COMMIT;
-drop index DeliveryPoints_SP_Index;
-create index DeliveryPoints_SP_Index on DELIVERYPOINTS(LOCATION)
+drop index Points_SP_Index;
+create index Points_SP_Index on POINTS(LOCATION)
   indextype is mdsys.spatial_index;
-
---creating spatial index fot table userpoints
-INSERT INTO USER_SDO_GEOM_METADATA(TABLE_NAME, COLUMN_NAME, DIMINFO, SRID)
-VALUES ('USERPOINTS', 'LOCATION', MDSYS.SDO_DIM_ARRAY(MDSYS.SDO_DIM_ELEMENT('X', -180, 180, 0.005),
-                                     MDSYS.SDO_DIM_ELEMENT('Y', -90, 90, 0.005)),
-        4326);
-DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME = 'USERPOINTS';
-COMMIT;
-drop index USERPOINTS_SP_Index;
-create index USERPOINTS_SP_Index on USERPOINTS(LOCATION)
-  indextype is mdsys.spatial_index;
-
 --creating spatial index fot table roads
 INSERT INTO USER_SDO_GEOM_METADATA(TABLE_NAME, COLUMN_NAME, DIMINFO, SRID)
 VALUES ('ROADS', 'ROAD', MDSYS.SDO_DIM_ARRAY(MDSYS.SDO_DIM_ELEMENT('X', -180, 180, 0.005),

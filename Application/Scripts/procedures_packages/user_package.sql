@@ -1,12 +1,20 @@
 create or replace package user_package as
+    --register user
+    procedure register_user(get_login nvarchar2,
+                            get_userpoint_name points.point_name%type,
+                            password nvarchar2,
+                            get_role nvarchar2,
+                            get_email nvarchar2);
+    --authorisation accaunt
+    function authorization(get_login nvarchar2,
+                           get_password nvarchar2) return sys_refcursor;
     --get cutomer info
     function get_customer_info(user_login userlogin.login%type) return sys_refcursor;
     --get count of unprocessed orders by login
     function get_orders_count_by_status_or_all(user_login userlogin.login%type,
                                                get_status orders.status%type default 'unprocessed',
                                                get_all nchar) return number;
-    --count rows of Goods table for pagination
-    function count_rows_of_goods return number;
+
     --add good to rder
     procedure add_good_to_order(order_name orders.ordername%type, good_name goods.name%type);
     --add goodstoorders
@@ -22,17 +30,13 @@ create or replace package user_package as
                                 get_delivery_type orders.deliverytype%type,
                                 get_order_price orders.price%type
     ) return orders.id%type;
-    --get pagination goods between start value and end value
-    function get_pagination_goods(start_value number, end_value number) return sys_refcursor;
+
     --get executor login by order id
     function get_executor_login_by_order_id(order_id orders.id%type) return userlogin.login%type;
     --get routes by user login
     function get_routes_by_user_login(user_login userlogin.login%type) return sys_refcursor;
-    --get analise abount customer poin and all delivery points
-    function get_route_length_analysis(customer_point_name points.point_name%type) return sys_refcursor;
-    --get_distance_line
-    function get_distance_between_deliverypoint_customer(delivery_point_name POINTS.POINT_NAME%type,
-                                                         customer_location_name POINTS.POINT_NAME%type) return number;
+
+
     --add order
     function add_order(customer_login userlogin.login%type, good_name goods.name%type,
                        get_data_order date default sysdate, get_delivery_date date,
@@ -41,13 +45,9 @@ create or replace package user_package as
                        get_delivery_point_pickup points.point_name%type) return orders.ordername%type;
     --get orders by login
     function get_orders_not_executed_by_login(user_login userlogin.login%type) return sys_refcursor;
-    --add history
-    procedure add_history(order_id orders.id%type, customer_login userlogin.login%type,
-                          order_name orders.ordername%type, order_status orders.status%type);
+
     --get history
     function get_history_by_login(customer_login userlogin.login%type) return sys_refcursor;
-    --get all goods
-    function get_all_goods return sys_refcursor;
 
     --get good by name
     function get_good_by_name(good_name goods.name%type) return sys_refcursor; --return goods%rowtype;
@@ -57,10 +57,68 @@ create or replace package user_package as
     --add review
     procedure add_review(get_content reviews.content%type, get_estimation reviews.estimation%type,
                          get_login userlogin.login%type);
-
+------------support functions-----------------
+    function encrypt_password(password varchar2) return userlogin.password%type;
+    function dencrypt_password(password_hash varchar2) return varchar2;
 end user_package;
 
 create or replace package body user_package as
+    --register user
+    procedure register_user(get_login nvarchar2,
+                            get_userpoint_name points.point_name%type,
+                            password nvarchar2,
+                            get_role nvarchar2,
+                            get_email nvarchar2)
+        is
+        password_hash nvarchar2(200);
+        userlogin_id  userlogin.id%type;
+        userpoint_id  points.id%type;
+
+        fk_exception exception;
+        pragma exception_init (fk_exception, -2291);
+    begin
+        password_hash := encrypt_password(password);
+        insert into userlogin (login, password, role) values (get_login, password_hash, get_role);
+
+        select id into userlogin_id from userlogin where userlogin.login = get_login;
+        select id into userpoint_id from points where rtrim(POINT_NAME) = rtrim(get_userpoint_name);
+        insert into userprofile (email, userpointid, userloginid)
+        values (get_email, userpoint_id, userlogin_id);
+        commit;
+    exception
+        when no_data_found then rollback; raise no_data_found;
+        when dup_val_on_index then rollback; raise_application_error(-20002, 'Such login or email already exists');
+        when fk_exception then rollback; raise_application_error(-20003, 'Such login do not exist');
+        when others then rollback;
+        raise_application_error(-20001, sqlerrm);
+    end register_user;
+
+    --authorisation accaunt
+    function authorization(get_login nvarchar2,
+                           get_password nvarchar2) return sys_refcursor
+        is
+        login_role_cursor sys_refcursor;
+        select_password   userlogin.password%type;
+        decode_password   userlogin.password%type;
+
+        no_such_profile_exception exception;
+        pragma exception_init (no_such_profile_exception, 100);
+    begin
+        select password into select_password from userlogin where login = get_login;
+        decode_password := dencrypt_password(select_password);
+        if decode_password = get_password then
+            open login_role_cursor for select login, role from userlogin where login = get_login;
+            return login_role_cursor;
+        else
+            raise no_such_profile_exception;
+        end if;
+    exception
+        when no_such_profile_exception then
+            raise_application_error(-20002, 'Invalid login or password');
+        when others then
+            raise_application_error(-20001, sqlerrm);
+    end authorization;
+
     function get_customer_info(user_login userlogin.login%type) return sys_refcursor
         is
         info_cursor sys_refcursor;
@@ -100,14 +158,7 @@ create or replace package body user_package as
         end if;
         return orders_count;
     end;
-    --count rows of goods table
-    function count_rows_of_goods return number
-        is
-        row_count number;
-    begin
-        select count(*) into row_count from goods;
-        return row_count;
-    end;
+
     --add good to order
     procedure add_good_to_order(order_name orders.ordername%type, good_name goods.name%type)
         is
@@ -128,36 +179,7 @@ create or replace package body user_package as
         insert into goodstoorder values (order_id, good_id);
         commit;
     end;
-    --get pagination goods between start value and end value
-    function get_pagination_goods(start_value number, end_value number) return sys_refcursor
-        is
-        get_pagination_goods_cursor sys_refcursor;
-        row_count                   number;
-        wrong_input_data exception;
-    begin
-        select count(*) into row_count from goods;
-        if start_value > row_count then
-            raise wrong_input_data;
-        end if;
 
-        if start_value < 0 or end_value < 0 then
-            raise wrong_input_data;
-        elsif start_value > end_value then
-            raise wrong_input_data;
-        end if;
-
-        open get_pagination_goods_cursor for
-            select *
-            from (select goods.*,
-                         ROWNUM rnum
-                  from (select * from goods) goods
-                  where ROWNUM <= end_value)
-            where rnum >= start_value;
-        return get_pagination_goods_cursor;
-    exception
-        when wrong_input_data then
-            raise_application_error(-20001, 'Wrong input data');
-    end get_pagination_goods;
 --get executor login by order id
     function get_executor_login_by_order_id(order_id orders.id%type) return userlogin.login%type
         is
@@ -189,63 +211,16 @@ create or replace package body user_package as
                  join userlogin on userlogin.id = userprofile.userloginid
         where userlogin.login = user_login;
 
-        routes_by_login := user_package.get_route_length_analysis(point_name);
+        routes_by_login := general_package.get_route_length_analysis(point_name);
         return routes_by_login;
     exception
         when no_data_found then
             raise_application_error(-20001, 'Such user profile does not exist');
         when others then raise_application_error(-20000, 'Error in get_routes_by_user_login');
     end;
---get analysis
-    function get_route_length_analysis(customer_point_name points.point_name%type) return sys_refcursor
-        is
-        analysys_route_length_cursor sys_refcursor;
-    begin
-        open analysys_route_length_cursor for select p2.point_name                                                    as delivery_point,
-                                                     get_distance_between_deliverypoint_customer(p2.point_name,
-                                                                                                 customer_point_name) as distance,
-                                                     count(*)                                                         as staff_count
-                                              from userprofile
-                                                       join points p1
-                                                            on userprofile.USERPOINTID = p1.id
-                                                       join userlogin on
-                                                  userprofile.USERLOGINID = userlogin.id
-                                                       join points p2 on p2.id = userprofile.USERPOINTID
-                                              where p2.type = 'staff'
-                                                and userlogin.role = 'staff'
-                                                and userlogin.login != 'executor'
-                                              group by p2.point_name, customer_point_name;
-        return analysys_route_length_cursor;
-    exception
-        when no_data_found then raise_application_error(-20001, 'Such customer point does not exist');
-    end;
 
---get_distance_line
-    function get_distance_between_deliverypoint_customer(delivery_point_name POINTS.POINT_NAME%type,
-                                                         customer_location_name POINTS.POINT_NAME%type) return number
-        is
-        distance       number;
-        delivery_point points.location%type;
-        customer_point points.location%type;
-    begin
-        select location
-        into delivery_point
-        from points
-        where points.type = 'staff'
-          and rtrim(POINT_NAME) = rtrim(delivery_point_name);
-        select location
-        into customer_point
-        from points
-        where points.type = 'user'
-          and rtrim(POINT_NAME) = rtrim(customer_location_name);
 
-        select sdo_geom.sdo_distance(delivery_point, customer_point, 0.01, 'unit=km') into distance from dual;
-        return distance;
-    exception
-        when no_data_found then raise_application_error(-20002, 'Such delivery or customer point do not exist');
-        when others then raise_application_error(-20001, sqlerrm);
-        return -1;
-    end get_distance_between_deliverypoint_customer;
+
 
 --insert into orders  table
     function insert_into_orders(customer_profile_id orders.customerprofileid%type,
@@ -356,30 +331,11 @@ create or replace package body user_package as
     begin
         open orders_cursor for select *
                                from orders_not_executed_view
-                               where orders_not_executed_view.customer_login = user_login
-                                 and orders_not_executed_view.order_status != 'executed';
+                               where orders_not_executed_view.customer_login = user_login;
         return orders_cursor;
     end get_orders_not_executed_by_login;
 
---add history
-    procedure add_history(order_id orders.id%type,
-                          customer_login userlogin.login%type,
-                          order_name orders.ordername%type,
-                          order_status orders.status%type)
-        is
-        customer_profile_id userprofile.id%type;
-    begin
-        select userprofile.id
-        into customer_profile_id
-        from userprofile
-                 join USERLOGIN
-                      on userprofile.userloginid = userlogin.id
-        where userlogin.login = customer_login;
 
-        insert into history(orderid)
-        values (order_id);
-        commit;
-    end add_history;
 
 --get customer history
     function get_history_by_login(customer_login userlogin.login%type) return sys_refcursor
@@ -391,15 +347,6 @@ create or replace package body user_package as
                                 where history_view.user_login = customer_login;
         return history_cursor;
     end get_history_by_login;
-
---get all goods
-    function get_all_goods return sys_refcursor
-        is
-        goods sys_refcursor;
-    begin
-        open goods for select * from goods;
-        return goods;
-    end get_all_goods;
 
 --get good by name
     function get_good_by_name(good_name goods.name%type) return sys_refcursor
@@ -449,4 +396,21 @@ create or replace package body user_package as
             rollback;
             raise_application_error(-20001, sqlerrm);
     end add_review;
+
+    ------------support functions-----------------
+    function encrypt_password(password varchar2) return userlogin.password%type
+        is
+        hash_password userlogin.password%type;
+    begin
+        hash_password := utl_encode.text_encode(password, 'AL32UTF8',
+                                                UTL_ENCODE.BASE64);
+        return hash_password;
+    end encrypt_password;
+
+    function dencrypt_password(password_hash varchar2) return varchar2
+        is
+    begin
+        return utl_encode.text_decode(password_hash, 'AL32UTF8',
+                                      UTL_ENCODE.BASE64);
+    end dencrypt_password;
 end user_package;

@@ -43,19 +43,16 @@ select o1.ordername                                       as order_name,
        g.name                                             as good_name,
        userlogin.login                                    as executor_login,
        points.point_name                                  as delivery_point,
-
        admin_package.get_customerlogin_by_order_id(o1.id) as customer_login,
-
-
        admin_package.get_userlocation_by_order_id(o1.id)  as user_point
-
 from orders o1
          join points on o1.deliverylocationid = points.id
          join goodstoorder gto on o1.id = gto.orderid
          join goods g on gto.goodsid = g.id
          join USERPROFILE on o1.excecutorprofileid = userprofile.id
          join userlogin
-              on userprofile.userloginid = userlogin.id;
+              on userprofile.userloginid = userlogin.id
+where o1.status = 'processed';
 
 --orders_not_executed_view
 create or replace view orders_not_executed_view
@@ -70,14 +67,14 @@ select o1.ordername                                       as order_name,
        userlogin.login                                    as customer_login,
        user_package.get_executor_login_by_order_id(o1.id) as executor_login,
        points.point_name                                  as delivery_point,
-
        admin_package.get_userlocation_by_order_id(o1.id)  as user_point
 from orders o1
          join points on o1.deliverylocationid = points.id
          join goodstoorder on o1.id = goodstoorder.orderid
          join goods on goodstoorder.goodsid = goods.id
          join userprofile on o1.CUSTOMERPROFILEID = userprofile.id
-         join userlogin on userprofile.userloginid = userlogin.ID;
+         join userlogin on userprofile.userloginid = userlogin.ID
+where o1.status != 'executed';
 
 --reviews_view
 create or replace view reviews_view as
@@ -121,3 +118,47 @@ where p2.type = 'staff'
   and userlogin.role = 'staff'
   and userlogin.login != 'executor'
 group by p2.point_name;
+
+--orders_not_executed_view
+create or replace view orders_executed_view
+as
+select o1.ordername                                       as order_name,
+       o1.orderdate                                       as order_date,
+       o1.deliverydate                                    as delivery_date,
+       o1.status                                          as order_status,
+       o1.price                                           as order_price,
+       o1.DELIVERYTYPE                                    as delivery_type,
+       goods.name                                         as good_name,
+       userlogin.login                                    as customer_login,
+       user_package.get_executor_login_by_order_id(o1.id) as executor_login,
+       points.point_name                                  as delivery_point,
+
+       admin_package.get_userlocation_by_order_id(o1.id)  as user_point
+from orders o1
+         join points on o1.deliverylocationid = points.id
+         join goodstoorder on o1.id = goodstoorder.orderid
+         join goods on goodstoorder.goodsid = goods.id
+         join userprofile on o1.CUSTOMERPROFILEID = userprofile.id
+         join userlogin on userprofile.userloginid = userlogin.ID
+where o1.status = 'executed';
+
+create or replace view orders_executed_grouped_view
+as
+select o1.ordername                                       as order_name,
+       o1.orderdate                                       as order_date,
+       o1.deliverydate                                    as delivery_date,
+       o1.status                                          as order_status,
+       o1.price                                           as order_price,
+       o1.DELIVERYTYPE                                    as delivery_type,
+       userlogin.login                                    as customer_login,
+       user_package.get_executor_login_by_order_id(o1.id) as executor_login
+from orders o1
+         join points on o1.deliverylocationid = points.id
+         join goodstoorder on o1.id = goodstoorder.orderid
+         join goods on goodstoorder.goodsid = goods.id
+         join userprofile on o1.CUSTOMERPROFILEID = userprofile.id
+         join userlogin on userprofile.userloginid = userlogin.ID
+where o1.status = 'executed'
+group by  o1.ordername, o1.orderdate, o1.deliverydate, o1.status, o1.price,
+          o1.deliverytype, userlogin.login, o1.id ;
+

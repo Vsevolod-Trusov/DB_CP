@@ -25,6 +25,8 @@ TO CUSTOMER_ROLE;
 grant select on goods to customer_role;
 --revoke select on goods from customer_role;
 GRANT EXECUTE ON admin.user_package TO CUSTOMER_ROLE;
+GRANT EXECUTE ON admin.general_package TO CUSTOMER_ROLE;
+
 
 GRANT CUSTOMER_ROLE TO CUSTOMER;
 REVOKE CUSTOMER_ROLE FROM CUSTOMER;

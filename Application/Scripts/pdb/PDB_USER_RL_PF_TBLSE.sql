@@ -44,6 +44,8 @@ GRANT
 TO ADMIN_ROLE WITH ADMIN OPTION;
 grant create view to ADMIN_ROLE;
 grant create trigger to ADMIN_ROLE;
+grant create any directory to ADMIN_ROLE;
+grant read, write on directory course_dir to ADMIN_ROLE;
 CREATE PROFILE ADMIN_PROFILE LIMIT
     PASSWORD_LIFE_TIME 180
     SESSIONS_PER_USER 10
